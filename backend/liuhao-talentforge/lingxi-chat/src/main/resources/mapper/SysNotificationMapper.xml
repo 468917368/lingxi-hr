@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.chat.mapper.SysNotificationMapper">
+
+    <resultMap id="BaseResultMap" type="SysNotification">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="type" property="type"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="target_type" property="targetType"/>
+        <result column="target_id" property="targetId"/>
+        <result column="is_read" property="isRead"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_id, type, title, content, target_type, target_id, is_read, created_at
+    </sql>
+
+    <!-- 插入通知 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_notification (user_id, type, title, content, target_type, target_id)
+        VALUES (#{userId}, #{type}, #{title}, #{content}, #{targetType}, #{targetId})
+    </insert>
+
+    <!-- 根据ID查询通知 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM sys_notification
+        WHERE id = #{id}
+    </select>
+
+    <!-- 分页查询用户的通知列表 -->
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM sys_notification
+        WHERE user_id = #{userId}
+        <if test="type != null">AND type = #{type}</if>
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计用户的通知总数 -->
+    <select id="countByUserId" resultType="long">
+        SELECT COUNT(*)
+        FROM sys_notification
+        WHERE user_id = #{userId}
+        <if test="type != null">AND type = #{type}</if>
+    </select>
+
+    <!-- 统计用户的未读通知数 -->
+    <select id="countUnreadByUserId" resultType="long">
+        SELECT COUNT(*)
+        FROM sys_notification
+        WHERE user_id = #{userId} AND is_read = 0
+    </select>
+
+    <!-- 按类型统计用户的未读通知数 -->
+    <select id="countUnreadByUserIdAndType" resultType="long">
+        SELECT COUNT(*)
+        FROM sys_notification
+        WHERE user_id = #{userId} AND type = #{type} AND is_read = 0
+    </select>
+
+    <!-- 标记通知为已读 -->
+    <update id="markAsRead">
+        UPDATE sys_notification
+        SET is_read = 1
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <!-- 标记用户所有通知为已读 -->
+    <update id="markAllAsRead">
+        UPDATE sys_notification
+        SET is_read = 1
+        WHERE user_id = #{userId} AND is_read = 0
+    </update>
+
+    <!-- 按类型统计用户的未读通知数（一次查询返回所有类型） -->
+    <select id="countUnreadGroupByType" resultType="map">
+        SELECT type, COUNT(*) as cnt
+        FROM sys_notification
+        WHERE user_id = #{userId} AND is_read = 0
+        GROUP BY type
+    </select>
+
+    <!-- 删除用户今日的指定类型通知 -->
+    <delete id="deleteTodayByUserAndType">
+        DELETE FROM sys_notification
+        WHERE user_id = #{userId}
+          AND type = #{type}
+          AND DATE(created_at) = CURDATE()
+    </delete>
+
+</mapper>

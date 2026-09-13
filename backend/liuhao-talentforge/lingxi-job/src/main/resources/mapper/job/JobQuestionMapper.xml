@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.job.mapper.JobQuestionMapper">
+
+    <sql id="Base_Column_List">
+        id, company_id, job_type, skill_tags, question_type, difficulty, content,
+        content_sha256, key_points, reference_answer, evaluation_points, source, status,
+        version, created_by, created_at, updated_at, deleted_at, reviewed_by, reviewed_at,
+        review_reason
+    </sql>
+
+    <!-- 按ID查询题目（未删除） -->
+    <select id="selectById" resultType="com.lingxi.job.domain.entity.JobQuestion">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM job_question
+        WHERE id = #{id} AND deleted_at IS NULL
+    </select>
+
+    <!--
+        Agent 题库搜索（百宝箱 Tool3）
+        排序回归系分 3.2.4：①技能标签重合度 DESC → ②difficulty 精确匹配优先
+        → ③每题型取一题（ROW_NUMBER PARTITION BY question_type）→ ④id ASC 稳定
+        每种题型最多 1 条、合计 ≤4 条
+    -->
+    <select id="selectForAgentSearch" resultType="com.lingxi.job.domain.entity.JobQuestion">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM (
+            SELECT q.id, q.company_id, q.job_type, q.skill_tags, q.question_type, q.difficulty,
+                   q.content, q.content_sha256, q.key_points, q.reference_answer, q.evaluation_points,
+                   q.source, q.status, q.version, q.created_by, q.created_at, q.updated_at,
+                   q.deleted_at, q.reviewed_by, q.reviewed_at, q.review_reason,
+                   ROW_NUMBER() OVER (PARTITION BY q.question_type ORDER BY
+                       <choose>
+                           <when test="q.skillTags != null and q.skillTags.size() > 0">
+                               (
+                               <foreach collection="q.skillTags" item="tag" separator="+">
+                                   IF(JSON_CONTAINS(q.skill_tags, JSON_ARRAY(#{tag})), 1, 0)
+                               </foreach>
+                               ) DESC,
+                           </when>
+                           <otherwise>
+                               0.0 DESC,
+                           </otherwise>
+                       </choose>
+                       CASE WHEN #{q.difficulty} IS NOT NULL AND #{q.difficulty} != '' AND q.difficulty = #{q.difficulty}
+                            THEN 0 ELSE 1 END ASC,
+                       q.id ASC
+                   ) AS rn
+            FROM job_question q
+            WHERE q.company_id = #{q.companyId}
+              AND q.status = 'ACTIVE'
+              AND q.deleted_at IS NULL
+              <if test="q.jobType != null and q.jobType != ''">
+                  AND q.job_type = #{q.jobType}
+              </if>
+              <if test="q.questionType != null and q.questionType != ''">
+                  AND q.question_type = #{q.questionType}
+              </if>
+              <if test="q.difficulty != null and q.difficulty != ''">
+                  AND q.difficulty = #{q.difficulty}
+              </if>
+        ) t
+        WHERE t.rn = 1
+        LIMIT 4
+    </select>
+
+    <!--
+        出题确定性选题专用（企业私有题确定性选题）
+        与 selectForAgentSearch 区别：内层 WHERE 固定 question_type IN 4 标准题型（非标准题型不抢占 LIMIT 4）；
+        删 difficulty WHERE 过滤（difficulty 走 ORDER BY CASE 排序优先）；其余骨架一致
+        （技能标签重合度 DESC → difficulty 精确匹配优先 → 每题型取一题 → id ASC 稳定）
+    -->
+    <select id="selectForPrivateQuestion" resultType="com.lingxi.job.domain.entity.JobQuestion">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM (
+            SELECT q.id, q.company_id, q.job_type, q.skill_tags, q.question_type, q.difficulty,
+                   q.content, q.content_sha256, q.key_points, q.reference_answer, q.evaluation_points,
+                   q.source, q.status, q.version, q.created_by, q.created_at, q.updated_at,
+                   q.deleted_at, q.reviewed_by, q.reviewed_at, q.review_reason,
+                   ROW_NUMBER() OVER (PARTITION BY q.question_type ORDER BY
+                       <choose>
+                           <when test="q.skillTags != null and q.skillTags.size() > 0">
+                               (
+                               <foreach collection="q.skillTags" item="tag" separator="+">
+                                   IF(JSON_CONTAINS(q.skill_tags, JSON_ARRAY(#{tag})), 1, 0)
+                               </foreach>
+                               ) DESC,
+                           </when>
+                           <otherwise>
+                               0.0 DESC,
+                           </otherwise>
+                       </choose>
+                       CASE WHEN #{q.difficulty} IS NOT NULL AND #{q.difficulty} != '' AND q.difficulty = #{q.difficulty}
+                            THEN 0 ELSE 1 END ASC,
+                       q.id ASC
+                   ) AS rn
+            FROM job_question q
+            WHERE q.company_id = #{q.companyId}
+              AND q.status = 'ACTIVE'
+              AND q.deleted_at IS NULL
+              AND q.question_type IN ('BASIC','PROJECT','BOUNDARY','COMPREHENSIVE')
+              <if test="q.jobType != null and q.jobType != ''">
+                  AND q.job_type = #{q.jobType}
+              </if>
+              <if test="q.questionType != null and q.questionType != ''">
+                  AND q.question_type = #{q.questionType}
+              </if>
+        ) t
+        WHERE t.rn = 1
+        LIMIT 4
+    </select>
+
+    <!-- ==================== 题库写侧（阶段6.1） ==================== -->
+
+    <!-- 企业隔离单查（id + companyId，未删除） -->
+    <select id="selectByIdAndCompanyId" resultType="com.lingxi.job.domain.entity.JobQuestion">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM job_question
+        WHERE id = #{id} AND company_id = #{companyId} AND deleted_at IS NULL
+    </select>
+
+    <!-- HR 题库分页列表：SQL 固定 company_id，四筛，id DESC；不查 reference_answer/key_points/evaluation_points（列表脱敏） -->
+    <select id="selectHrQuestionList" resultType="com.lingxi.job.domain.entity.JobQuestion">
+        SELECT id, company_id, job_type, skill_tags, question_type, difficulty, content, content_sha256,
+               source, status, version, created_by, created_at, updated_at, deleted_at,
+               reviewed_by, reviewed_at, review_reason
+        FROM job_question
+        WHERE company_id = #{companyId} AND deleted_at IS NULL
+        <if test="q.jobType != null and q.jobType != ''">
+            AND job_type = #{q.jobType}
+        </if>
+        <if test="q.questionType != null and q.questionType != ''">
+            AND question_type = #{q.questionType}
+        </if>
+        <if test="q.difficulty != null and q.difficulty != ''">
+            AND difficulty = #{q.difficulty}
+        </if>
+        <if test="q.status != null and q.status != ''">
+            AND status = #{q.status}
+        </if>
+        ORDER BY id DESC
+    </select>
+
+    <!-- 未删除同 content 查重（excludeId 编辑时排除自身） -->
+    <select id="countActiveByCompanyAndContentHash" resultType="int">
+        SELECT COUNT(*)
+        FROM job_question
+        WHERE company_id = #{companyId} AND content_sha256 = #{contentSha256} AND deleted_at IS NULL
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 查找可复用软删行（同 content，deleted_at 非空） -->
+    <select id="selectDeletedByContentHash" resultType="com.lingxi.job.domain.entity.JobQuestion">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM job_question
+        WHERE company_id = #{companyId} AND content_sha256 = #{contentSha256} AND deleted_at IS NOT NULL
+        ORDER BY id DESC
+        LIMIT 1
+    </select>
+
+    <!-- 新增题目（useGeneratedKeys 回填 id；version 走 DDL 默认 0） -->
+    <insert id="insert" parameterType="com.lingxi.job.domain.entity.JobQuestion" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO job_question (company_id, job_type, skill_tags, question_type, difficulty, content,
+                                  content_sha256, key_points, reference_answer, evaluation_points,
+                                  source, status, created_by)
+        VALUES (#{companyId}, #{jobType}, #{skillTags}, #{questionType}, #{difficulty}, #{content},
+                #{contentSha256}, #{keyPoints}, #{referenceAnswer}, #{evaluationPoints},
+                #{source}, #{status}, #{createdBy})
+    </insert>
+
+    <!-- 编辑题目（乐观锁，WHERE id+company_id+version+deleted_at IS NULL）；编辑重写内容，旧审核信息一并清空（REJECTED 重编回 PENDING_REVIEW 语义） -->
+    <update id="updateByIdAndCompanyIdAndVersion" parameterType="com.lingxi.job.domain.entity.JobQuestion">
+        UPDATE job_question
+        SET job_type = #{jobType},
+            skill_tags = #{skillTags},
+            question_type = #{questionType},
+            difficulty = #{difficulty},
+            content = #{content},
+            content_sha256 = #{contentSha256},
+            key_points = #{keyPoints},
+            reference_answer = #{referenceAnswer},
+            evaluation_points = #{evaluationPoints},
+            status = #{status},
+            <!-- 仅 REJECTED 重编回 PENDING_REVIEW 时清旧审核信息；ACTIVE/INACTIVE 编辑保留审核审计 -->
+            <if test="status != null and status == 'PENDING_REVIEW'">
+                reviewed_by = NULL,
+                reviewed_at = NULL,
+                review_reason = NULL,
+            </if>
+            updated_at = NOW(),
+            version = version + 1
+        WHERE id = #{id} AND company_id = #{companyId}
+              AND version = #{version} AND deleted_at IS NULL
+    </update>
+
+    <!-- 软删行复用恢复：WHERE id+company_id+deleted_at IS NOT NULL（唯一不以 deleted_at IS NULL 守卫的写 SQL） -->
+    <update id="restoreDeleted">
+        UPDATE job_question
+        SET job_type = #{question.jobType},
+            skill_tags = #{question.skillTags},
+            question_type = #{question.questionType},
+            difficulty = #{question.difficulty},
+            content = #{question.content},
+            content_sha256 = #{question.contentSha256},
+            key_points = #{question.keyPoints},
+            reference_answer = #{question.referenceAnswer},
+            evaluation_points = #{question.evaluationPoints},
+            source = #{question.source},
+            status = #{question.status},
+            created_by = #{question.createdBy},
+            reviewed_by = NULL,
+            reviewed_at = NULL,
+            review_reason = NULL,
+            deleted_at = NULL,
+            updated_at = NOW(),
+            version = version + 1
+        WHERE id = #{id} AND company_id = #{companyId} AND deleted_at IS NOT NULL
+    </update>
+
+    <!-- 软删除题目（乐观锁） -->
+    <update id="softDelete">
+        UPDATE job_question
+        SET deleted_at = NOW(), version = version + 1
+        WHERE id = #{id} AND company_id = #{companyId}
+              AND version = #{version} AND deleted_at IS NULL
+    </update>
+
+    <!-- 启用题目（INACTIVE→ACTIVE，乐观锁） -->
+    <update id="enable">
+        UPDATE job_question
+        SET status = 'ACTIVE', updated_at = NOW(), version = version + 1
+        WHERE id = #{id} AND company_id = #{companyId} AND status = 'INACTIVE'
+              AND version = #{version} AND deleted_at IS NULL
+    </update>
+
+    <!-- 停用题目（ACTIVE→INACTIVE，乐观锁） -->
+    <update id="disable">
+        UPDATE job_question
+        SET status = 'INACTIVE', updated_at = NOW(), version = version + 1
+        WHERE id = #{id} AND company_id = #{companyId} AND status = 'ACTIVE'
+              AND version = #{version} AND deleted_at IS NULL
+    </update>
+
+    <!-- 审核流转（PENDING_REVIEW→ACTIVE/REJECTED，落 reviewed 三字段，乐观锁） -->
+    <update id="review">
+        UPDATE job_question
+        SET status = #{status},
+            reviewed_by = #{reviewedBy},
+            reviewed_at = #{reviewedAt},
+            review_reason = #{reviewReason},
+            updated_at = NOW(),
+            version = version + 1
+        WHERE id = #{id} AND company_id = #{companyId} AND status = 'PENDING_REVIEW'
+              AND version = #{version} AND deleted_at IS NULL
+    </update>
+
+    <!-- 待审核计数 -->
+    <select id="countPending" resultType="long">
+        SELECT COUNT(*)
+        FROM job_question
+        WHERE company_id = #{companyId} AND status = 'PENDING_REVIEW' AND deleted_at IS NULL
+    </select>
+
+</mapper>

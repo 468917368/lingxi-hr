@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.hr.mapper.HrCompanyMemberMapper">
+
+    <resultMap id="BaseResultMap" type="HrCompanyMember">
+        <id column="id" property="id"/>
+        <result column="company_id" property="companyId"/>
+        <result column="user_id" property="userId"/>
+        <result column="role" property="role"/>
+        <result column="department" property="department"/>
+        <result column="tech_direction" property="techDirection"/>
+        <result column="interview_count" property="interviewCount"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, company_id, user_id, role, department, tech_direction, interview_count, status, created_at, updated_at
+    </sql>
+
+    <!-- 插入成员 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO hr_company_member (company_id, user_id, role, department, tech_direction, interview_count, status)
+        VALUES (#{companyId}, #{userId}, #{role}, #{department}, #{techDirection}, #{interviewCount}, #{status})
+    </insert>
+
+    <!-- 按企业ID+用户ID查询 -->
+    <select id="selectByCompanyAndUser" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_company_member
+        WHERE company_id = #{companyId} AND user_id = #{userId}
+    </select>
+
+    <!-- 按企业ID+用户ID查询（悲观锁：创建面试串行化同一面试官，走 uk_company_user 唯一索引） -->
+    <select id="selectByCompanyAndUserForUpdate" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_company_member
+        WHERE company_id = #{companyId} AND user_id = #{userId}
+        FOR UPDATE
+    </select>
+
+    <!-- 查用户有效的企业成员关系 -->
+    <select id="selectActiveByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_company_member
+        WHERE user_id = #{userId} AND status = 'ACTIVE'
+        LIMIT 1
+    </select>
+
+    <!-- 按企业ID查询成员列表（角色/状态可空过滤） -->
+    <select id="selectByCompanyId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_company_member
+        WHERE company_id = #{companyId}
+        <if test="role != null and role != ''">
+            AND role = #{role}
+        </if>
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 按成员ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_company_member
+        WHERE id = #{id}
+    </select>
+
+    <!-- 按成员ID硬删除（仅面试官可移除，历史面试记录不受影响） -->
+    <delete id="deleteById">
+        DELETE FROM hr_company_member
+        WHERE id = #{id}
+    </delete>
+
+    <!-- 更新成员所属部门（个人中心，仅 ACTIVE 成员） -->
+    <update id="updateDepartment">
+        UPDATE hr_company_member
+        SET department = #{department}, updated_at = NOW()
+        WHERE company_id = #{companyId} AND user_id = #{userId} AND status = 'ACTIVE'
+    </update>
+
+    <!-- 查询用户所属企业ID（状态为ACTIVE） -->
+    <select id="selectCompanyIdByUserId" resultType="java.lang.Long">
+        SELECT company_id FROM hr_company_member
+        WHERE user_id = #{userId} AND status = 'ACTIVE' LIMIT 1
+    </select>
+
+    <!-- 查询所有HR用户ID -->
+    <select id="findAllHrUserIds" resultType="java.lang.Long">
+        SELECT DISTINCT user_id FROM hr_company_member
+        WHERE role = 'HR_ADMIN' AND status = 'ACTIVE'
+    </select>
+
+</mapper>

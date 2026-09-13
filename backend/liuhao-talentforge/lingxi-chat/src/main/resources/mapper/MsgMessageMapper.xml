@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.chat.mapper.MsgMessageMapper">
+
+    <resultMap id="BaseResultMap" type="MsgMessage">
+        <id column="id" property="id"/>
+        <result column="conversation_id" property="conversationId"/>
+        <result column="sender_id" property="senderId"/>
+        <result column="sender_role" property="senderRole"/>
+        <result column="msg_type" property="msgType"/>
+        <result column="content_type" property="contentType"/>
+        <result column="content" property="content"/>
+        <result column="media_url" property="mediaUrl"/>
+        <result column="file_name" property="fileName"/>
+        <result column="file_size" property="fileSize"/>
+        <result column="is_read" property="isRead"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, conversation_id, sender_id, sender_role, msg_type, content_type, content, media_url, file_name, file_size, is_read, created_at
+    </sql>
+
+    <!-- 插入消息 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO msg_message (conversation_id, sender_id, sender_role, msg_type, content_type, content, media_url, file_name, file_size)
+        VALUES (#{conversationId}, #{senderId}, #{senderRole}, #{msgType}, #{contentType}, #{content}, #{mediaUrl}, #{fileName}, #{fileSize})
+    </insert>
+
+    <!-- 根据ID查询消息 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM msg_message
+        WHERE id = #{id}
+    </select>
+
+    <!-- 分页查询会话的消息列表 -->
+    <select id="selectByConversationId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM msg_message
+        WHERE conversation_id = #{conversationId}
+        ORDER BY created_at ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计会话的消息总数 -->
+    <select id="countByConversationId" resultType="long">
+        SELECT COUNT(*)
+        FROM msg_message
+        WHERE conversation_id = #{conversationId}
+    </select>
+
+    <!-- 标记消息为已读 -->
+    <update id="markAsRead">
+        UPDATE msg_message
+        SET is_read = 1
+        WHERE conversation_id = #{conversationId} AND sender_id != #{userId} AND is_read = 0
+    </update>
+
+    <!-- 查询用户的未读消息列表 -->
+    <select id="selectUnreadByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM msg_message
+        WHERE conversation_id IN (
+            SELECT id FROM msg_conversation
+            WHERE (candidate_id = #{userId} OR hr_id = #{userId})
+        )
+        AND sender_id != #{userId}
+        AND is_read = 0
+        ORDER BY created_at ASC
+    </select>
+
+    <!-- 撤回消息（仅限发送者本人，更新内容为系统提示） -->
+    <update id="recallMessage">
+        UPDATE msg_message
+        SET content = '对方撤回了一条消息',
+            content_type = 'SYSTEM',
+            msg_type = 'TEXT',
+            media_url = NULL,
+            file_name = NULL,
+            file_size = NULL
+        WHERE id = #{messageId} AND sender_id = #{senderId}
+    </update>
+
+    <!-- 增量查询新消息（用于轮询） -->
+    <select id="selectAfterId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM msg_message
+        WHERE conversation_id = #{conversationId}
+          AND id > #{sinceId}
+        ORDER BY created_at ASC
+    </select>
+
+</mapper>

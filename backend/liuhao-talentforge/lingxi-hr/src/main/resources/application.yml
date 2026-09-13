@@ -1,0 +1,82 @@
+server:
+  port: 8084
+
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:lingxi}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: ${DB_USER:root}
+    password: ${DB_PASS:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 3000
+  redis:
+    host: ${REDIS_HOST:127.0.0.1}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASS:123456}
+
+# 阿里云短信配置
+aliyun:
+  sms:
+    mock: ${SMS_MOCK:true}                                    # true=开发模式，false=真实发送
+    sign-name: ${SMS_SIGN_NAME:速通互联验证码}
+    template-code: ${SMS_TEMPLATE_CODE:100001}
+    access-key-id: ${SMS_ACCESS_KEY_ID:your-sms-access-key-id}
+    access-key-secret: ${SMS_ACCESS_KEY_SECRET:your-sms-access-key-secret}
+    endpoint: dysmsapi.aliyuncs.com
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.lingxi.hr.domain.entity,com.lingxi.hr.agent.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+  sentinel:
+    enabled: true
+
+# RocketMQ
+rocketmq:
+  name-server: ${ROCKETMQ_NAMESRV:127.0.0.1:9876}
+  producer:
+    group: hr-producer-group
+
+# Sentinel日志目录
+sentinel:
+  log:
+    dir: ./logs/csp
+
+# Mock Interview Agent（百宝箱生成型工作流）
+hr:
+  agent:
+    mock: false                 # true=MockTboxLlmClient（预设JSON）；false=真实百宝箱
+    llm:
+      timeout-ms: 60000        # 单次 LLM 生成整体超时（系分 5.6.2）
+      score-timeout-ms: 15000  # 单题评分超时（系分 5.7）
+  mock-interview:
+    quota: ${HR_MOCK_INTERVIEW_QUOTA:3}   # 每日每求职者模拟面试次数上限，0=不限
+
+# 服务身份（调用对端 /internal/** 时携带，与对端 service-auth.tokens 中本服务名对应值一致）
+service-auth:
+  caller: lingxi-hr
+  token: hr-token-dev
+
+baibaoxiang:
+  api:
+    key: ${TBOX_API_KEY:your-tbox-api-key}
+  agent:
+    generate-app-id: ${TBOX_GENERATE_APP_ID:your-generate-app-id}
+    score-app-id: ${TBOX_SCORE_APP_ID:your-score-app-id}
+    report-app-id: ${TBOX_REPORT_APP_ID:your-report-app-id}

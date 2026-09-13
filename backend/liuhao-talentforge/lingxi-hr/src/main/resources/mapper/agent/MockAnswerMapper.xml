@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.hr.agent.mapper.MockAnswerMapper">
+
+    <insert id="insert" parameterType="MockAnswer" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO mock_answer
+            (session_id, question_number, question_content, question_dimension, question_type,
+             candidate_answer, is_skipped, tech_accuracy_score, expression_score, knowledge_depth_score,
+             overall_score, ai_comment, answered_at, created_at)
+        VALUES
+            (#{sessionId}, #{questionNumber}, #{questionContent}, #{questionDimension}, #{questionType},
+             #{candidateAnswer}, #{isSkipped}, #{techAccuracyScore}, #{expressionScore}, #{knowledgeDepthScore},
+             #{overallScore}, #{aiComment}, #{answeredAt}, #{createdAt})
+    </insert>
+
+    <select id="selectBySessionId" parameterType="string" resultType="MockAnswer">
+        SELECT * FROM mock_answer WHERE session_id = #{sessionId} ORDER BY question_number ASC
+    </select>
+
+    <select id="selectBySessionIdAndQuestionNumber" resultType="MockAnswer">
+        SELECT * FROM mock_answer WHERE session_id = #{sessionId} AND question_number = #{questionNumber}
+    </select>
+
+    <update id="updateAnswer" parameterType="MockAnswer">
+        UPDATE mock_answer
+        <set>
+            <if test="candidateAnswer != null">candidate_answer = #{candidateAnswer},</if>
+            <if test="isSkipped != null">is_skipped = #{isSkipped},</if>
+            <if test="techAccuracyScore != null">tech_accuracy_score = #{techAccuracyScore},</if>
+            <if test="expressionScore != null">expression_score = #{expressionScore},</if>
+            <if test="knowledgeDepthScore != null">knowledge_depth_score = #{knowledgeDepthScore},</if>
+            <if test="overallScore != null">overall_score = #{overallScore},</if>
+            <if test="aiComment != null">ai_comment = #{aiComment},</if>
+            <if test="answeredAt != null">answered_at = #{answeredAt},</if>
+        </set>
+        WHERE session_id = #{sessionId} AND question_number = #{questionNumber}
+    </update>
+
+</mapper>

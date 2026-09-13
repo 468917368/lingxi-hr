@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.admin.mapper.AdminConfigMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.lingxi.admin.domain.entity.AdminConfig">
+        <id column="id" property="id"/>
+        <result column="config_key" property="configKey"/>
+        <result column="config_value" property="configValue"/>
+        <result column="description" property="description"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        id, config_key, config_value, description, updated_at
+    </sql>
+
+    <!-- 查询所有配置 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM admin_config
+        ORDER BY id
+    </select>
+
+    <!-- 根据配置键查询 -->
+    <select id="selectByKey" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM admin_config
+        WHERE config_key = #{configKey}
+    </select>
+
+    <!-- 更新配置值 -->
+    <update id="updateByKey">
+        UPDATE admin_config
+        SET config_value = #{configValue}, updated_at = NOW()
+        WHERE config_key = #{configKey}
+    </update>
+
+</mapper>

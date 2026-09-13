@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.resume.mapper.ResumeStatusLogMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="ResumeStatusLog">
+        <id column="id" property="id"/>
+        <result column="application_id" property="applicationId"/>
+        <result column="from_status" property="fromStatus"/>
+        <result column="to_status" property="toStatus"/>
+        <result column="operator_id" property="operatorId"/>
+        <result column="operator_role" property="operatorRole"/>
+        <result column="reason" property="reason"/>
+        <result column="idempotent_key" property="idempotentKey"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        id, application_id, from_status, to_status,
+        operator_id, operator_role, reason, idempotent_key, created_at
+    </sql>
+
+    <!-- 根据投递ID查询状态时间线（正序） -->
+    <select id="selectByApplicationId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume_status_log
+        WHERE application_id = #{applicationId}
+        ORDER BY created_at ASC
+    </select>
+
+    <!-- 根据幂等键查询 -->
+    <select id="selectByIdempotentKey" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume_status_log
+        WHERE idempotent_key = #{idempotentKey}
+    </select>
+
+    <!-- 插入变更日志 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO resume_status_log (
+            application_id, from_status, to_status,
+            operator_id, operator_role, reason, idempotent_key
+        ) VALUES (
+            #{applicationId}, #{fromStatus}, #{toStatus},
+            #{operatorId}, #{operatorRole}, #{reason}, #{idempotentKey}
+        )
+    </insert>
+
+</mapper>

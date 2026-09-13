@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.admin.mapper.SysUserMapper">
+
+    <!-- 统计用户总数 -->
+    <select id="countUsers" resultType="long">
+        SELECT COUNT(*) FROM sys_user
+    </select>
+
+    <!-- 统计今日新增用户 -->
+    <select id="countTodayUsers" resultType="long">
+        SELECT COUNT(*) FROM sys_user
+        WHERE DATE(created_at) = CURDATE()
+    </select>
+
+    <!-- 分页查询求职者列表 -->
+    <select id="selectCandidates" resultType="map">
+        SELECT
+            u.id, u.name, u.phone, u.email, u.status, u.created_at,
+            p.city,
+            p.job_status AS jobStatus,
+            p.desired_job AS desiredJob,
+            (SELECT COUNT(*) FROM resume r WHERE r.candidate_id = u.id AND r.deleted_at IS NULL) AS resumeCount,
+            (SELECT COUNT(*) FROM resume_application ra WHERE ra.candidate_id = u.id) AS applyCount
+        FROM sys_user u
+        LEFT JOIN sys_user_profile p ON p.user_id = u.id
+        WHERE u.role = 'CANDIDATE'
+        <if test="status != null and status != ''">
+            AND u.status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (u.name LIKE CONCAT('%', #{keyword}, '%') OR u.phone LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY u.created_at DESC
+    </select>
+
+    <!-- 根据ID查询用户 -->
+    <select id="selectById" resultType="map">
+        SELECT id, name, phone, email, role, status, created_at
+        FROM sys_user
+        WHERE id = #{id}
+    </select>
+
+    <!-- 查询用户画像 -->
+    <select id="selectProfileByUserId" resultType="map">
+        SELECT city, job_status AS jobStatus, desired_job AS desiredJob,
+               desired_city AS desiredCity, desired_salary_min AS desiredSalaryMin,
+               desired_salary_max AS desiredSalaryMax
+        FROM sys_user_profile
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 统计简历数 -->
+    <select id="countResumesByUserId" resultType="int">
+        SELECT COUNT(*) FROM resume
+        WHERE candidate_id = #{userId} AND deleted_at IS NULL
+    </select>
+
+    <!-- 统计投递数 -->
+    <select id="countApplicationsByUserId" resultType="int">
+        SELECT COUNT(*) FROM resume_application
+        WHERE candidate_id = #{userId}
+    </select>
+
+    <!-- 查询求职者的投递记录列表 -->
+    <select id="selectApplicationsByCandidateId" resultType="map">
+        SELECT
+            ra.id,
+            jp.title AS jobTitle,
+            hc.name AS companyName,
+            ra.status,
+            ra.submitted_at AS appliedAt,
+            ra.updated_at AS lastUpdatedAt
+        FROM resume_application ra
+        LEFT JOIN job_post jp ON ra.job_id = jp.id
+        LEFT JOIN hr_company hc ON jp.company_id = hc.id
+        WHERE ra.candidate_id = #{candidateId}
+        ORDER BY ra.submitted_at DESC
+    </select>
+
+    <!-- 按岗位ID批量统计投递数 -->
+    <select id="countApplicationsByJobIds" resultType="map">
+        SELECT job_id AS jobId, COUNT(*) AS applyCount
+        FROM resume_application
+        WHERE job_id IN
+        <foreach collection="jobIds" item="jid" open="(" separator="," close=")">
+            #{jid}
+        </foreach>
+        GROUP BY job_id
+    </select>
+
+    <!-- 更新用户状态 -->
+    <update id="updateStatus">
+        UPDATE sys_user
+        SET status = #{status}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+</mapper>

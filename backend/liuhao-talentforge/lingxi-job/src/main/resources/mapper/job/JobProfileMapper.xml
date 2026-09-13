@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.job.mapper.JobProfileMapper">
+
+    <sql id="Base_Column_List">
+        id, company_id, job_id, job_type, core_skills, soft_skills, industry_experience,
+        hidden_requirements, interview_focus, profile_source, version, confirmed_by,
+        confirmed_at, created_at, updated_at
+    </sql>
+
+    <!-- 按岗位ID查询画像（内部公共查询，仅按 jobId） -->
+    <select id="selectByJobId" resultType="com.lingxi.job.domain.entity.JobProfile">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM job_profile
+        WHERE job_id = #{jobId}
+    </select>
+
+    <!-- 按岗位ID+企业ID查询画像（企业隔离，HR 端使用） -->
+    <select id="selectByJobIdAndCompanyId" resultType="com.lingxi.job.domain.entity.JobProfile">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM job_profile
+        WHERE job_id = #{jobId} AND company_id = #{companyId}
+    </select>
+
+    <!-- 插入岗位画像（useGeneratedKeys 回填 id） -->
+    <insert id="insert" parameterType="com.lingxi.job.domain.entity.JobProfile"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO job_profile (
+            company_id, job_id, job_type, core_skills, soft_skills, industry_experience,
+            hidden_requirements, interview_focus, profile_source, version, confirmed_by, confirmed_at
+        ) VALUES (
+            #{companyId}, #{jobId}, #{jobType}, #{coreSkills}, #{softSkills}, #{industryExperience},
+            #{hiddenRequirements}, #{interviewFocus}, #{profileSource}, #{version}, #{confirmedBy}, #{confirmedAt}
+        )
+    </insert>
+
+    <!-- 按ID+企业ID乐观锁更新画像 -->
+    <update id="updateByIdAndVersion" parameterType="com.lingxi.job.domain.entity.JobProfile">
+        UPDATE job_profile
+        SET job_type = #{jobType},
+            core_skills = #{coreSkills},
+            soft_skills = #{softSkills},
+            industry_experience = #{industryExperience},
+            hidden_requirements = #{hiddenRequirements},
+            interview_focus = #{interviewFocus},
+            profile_source = #{profileSource},
+            confirmed_by = #{confirmedBy},
+            confirmed_at = #{confirmedAt},
+            version = version + 1
+        WHERE id = #{id} AND company_id = #{companyId} AND version = #{version}
+    </update>
+
+</mapper>

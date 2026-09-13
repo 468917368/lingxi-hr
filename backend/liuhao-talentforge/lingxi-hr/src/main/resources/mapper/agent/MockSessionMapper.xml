@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.hr.agent.mapper.MockSessionMapper">
+
+    <insert id="insert" parameterType="MockSession" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO mock_session
+            (session_id, candidate_id, job_id, job_title, total_questions, overall_score, status, started_at, completed_at)
+        VALUES
+            (#{sessionId}, #{candidateId}, #{jobId}, #{jobTitle}, #{totalQuestions}, #{overallScore}, #{status}, #{startedAt}, #{completedAt})
+    </insert>
+
+    <select id="selectById" parameterType="long" resultType="MockSession">
+        SELECT * FROM mock_session WHERE id = #{id}
+    </select>
+
+    <select id="selectBySessionId" parameterType="string" resultType="MockSession">
+        SELECT * FROM mock_session WHERE session_id = #{sessionId}
+    </select>
+
+    <select id="countByCandidateIdAndStartAt" resultType="int">
+        SELECT COUNT(*) FROM mock_session
+        WHERE candidate_id = #{candidateId} AND started_at &gt;= #{startAt}
+    </select>
+
+    <update id="updateById" parameterType="MockSession">
+        UPDATE mock_session
+        <set>
+            <if test="jobId != null">job_id = #{jobId},</if>
+            <if test="jobTitle != null">job_title = #{jobTitle},</if>
+            <if test="totalQuestions != null">total_questions = #{totalQuestions},</if>
+            <if test="overallScore != null">overall_score = #{overallScore},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="completedAt != null">completed_at = #{completedAt},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>

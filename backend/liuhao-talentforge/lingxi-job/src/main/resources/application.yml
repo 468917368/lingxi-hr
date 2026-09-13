@@ -1,0 +1,104 @@
+server:
+  port: 8082
+
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:lingxi}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: ${DB_USER:root}
+    password: ${DB_PASS:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 3000
+  redis:
+    host: ${REDIS_HOST:127.0.0.1}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASS:123456}
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.lingxi.job.domain.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+  sentinel:
+    enabled: true
+
+# RocketMQ
+rocketmq:
+  name-server: ${ROCKETMQ_NAMESRV:127.0.0.1:9876}
+  producer:
+    group: job-producer-group
+
+# Sentinel日志目录
+sentinel:
+  log:
+    dir: ./logs/csp
+
+# AI Agent 配置（Mock/Real 由 Profile 决定：application-dev.yml mock=false→Real；application-test.yml mock=true→Mock）
+ai:
+  agent:
+    # Mock 开关：false=走真实百宝箱（Real，依赖 baibaoxiang 真实凭证）；true=Mock 本地模拟（测试环境 application-test.yml 固定 true 覆盖）
+    mock: false
+    # JD 解析超时（秒），超时 → 2301
+    jd-parse-timeout-seconds: 30
+    # 企业私有题确定性选题开关（false=跳过选题直接纯 AI）
+    private-question:
+      enabled: true
+
+# 百宝箱配置（企业版开放平台 /api/chat 协议；密钥仅来自环境变量，严禁硬编码）
+baibaoxiang:
+  base-url: ${BAIBAOXIANG_BASE_URL:https://api.tbox.cn}
+  # 出站 Authorization 原值（Token，仅 Real 模式必需）
+  authorization: your-baibaoxiang-authorization
+  # 服务端 HMAC 密钥（生成按 AppID 隔离的 userId 伪标识，仅 Real 模式必需）
+  user-id-hmac-key: your-baibaoxiang-hmac-key
+  # JD 解析目标应用 ID（仅 Real 模式必需）
+  jd-parse-app-id: your-jd-parse-app-id
+  # 面试出题目标应用 ID（仅 Real 模式必需）
+  interview-app-id: your-interview-app-id
+  # 连接/读取超时（毫秒）
+  connect-timeout-ms: 3000
+  read-timeout-ms: 30000
+  # 流式（面试出题）总超时（毫秒）：上游未正常结束/连接保持时强制结束，避免前端无限 loading
+  # 必须小于 sse.emitter-timeout-ms(120000)：保证后端先回调 error(2303)+complete，而非 SseEmitter 先超时关闭（onTimeout 不发 error）
+  stream-timeout-ms: 110000
+
+# Interview Agent SSE 配置
+sse:
+  # SseEmitter 超时（毫秒）
+  emitter-timeout-ms: 120000
+  # 全局并发上限（agentSseSemaphore 许可数）
+  concurrency: 10
+  # SSE 异步线程池
+  thread-pool:
+    core: 10
+    max: 10
+    queue: 10
+
+# 内部服务凭证
+service-auth:
+  tokens:
+    lingxi-user: user-token-dev
+    lingxi-resume: resume-token-dev
+    lingxi-hr: hr-token-dev
+    lingxi-admin: admin-token-dev
+    lingxi-job: job-token-dev
+
+# 岗位到期自动关闭定时任务（每小时整点；环境变量可覆盖，测试环境置 "-" 禁用）
+job:
+  expire-close:
+    cron: "${JOB_EXPIRE_CLOSE_CRON:0 0 * * * ?}"

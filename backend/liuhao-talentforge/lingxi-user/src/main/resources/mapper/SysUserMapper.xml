@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.user.mapper.SysUserMapper">
+
+    <resultMap id="BaseResultMap" type="SysUser">
+        <id column="id" property="id"/>
+        <result column="phone" property="phone"/>
+        <result column="password_hash" property="passwordHash"/>
+        <result column="name" property="name"/>
+        <result column="name_updated_at" property="nameUpdatedAt"/>
+        <result column="avatar" property="avatar"/>
+        <result column="email" property="email"/>
+        <result column="role" property="role"/>
+        <result column="status" property="status"/>
+        <result column="first_login" property="firstLogin"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, phone, password_hash, name, name_updated_at, avatar, email, role, status, first_login, created_at, updated_at
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM sys_user
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据手机号查询 -->
+    <select id="selectByPhone" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM sys_user
+        WHERE phone = #{phone}
+    </select>
+
+    <!-- 插入记录 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_user (phone, password_hash, name, role, status, first_login)
+        VALUES (#{phone}, #{passwordHash}, #{name}, #{role}, #{status}, #{firstLogin})
+    </insert>
+
+    <!-- 更新记录 -->
+    <update id="updateById">
+        UPDATE sys_user
+        <set>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="passwordHash != null">password_hash = #{passwordHash},</if>
+            <if test="name != null">name = #{name}, name_updated_at = NOW(),</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="role != null">role = #{role},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="firstLogin != null">first_login = #{firstLogin},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 获取用户总数 -->
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM sys_user
+    </select>
+
+    <!-- 获取今日新增用户数 -->
+    <select id="countToday" resultType="long">
+        SELECT COUNT(*) FROM sys_user
+        WHERE DATE(created_at) = CURDATE()
+    </select>
+
+    <!-- 分页查询求职者列表 -->
+    <select id="selectCandidates" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM sys_user
+        WHERE role = 'CANDIDATE'
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%', #{keyword}, '%') OR phone LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计求职者总数 -->
+    <select id="countCandidates" resultType="long">
+        SELECT COUNT(*) FROM sys_user
+        WHERE role = 'CANDIDATE'
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%', #{keyword}, '%') OR phone LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+    </select>
+
+    <!-- 更新用户状态 -->
+    <update id="updateStatus">
+        UPDATE sys_user
+        SET status = #{status}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 查询最近N天活跃的求职者 -->
+    <select id="findActiveCandidates" resultType="java.lang.Long">
+        SELECT DISTINCT u.id
+        FROM sys_user u
+        INNER JOIN sys_login_log ll ON ll.user_id = u.id
+        WHERE u.role = 'CANDIDATE'
+          AND u.status = 'ACTIVE'
+          AND ll.login_time >= DATE_SUB(NOW(), INTERVAL #{days} DAY)
+          AND ll.login_status = 1
+    </select>
+
+    <!-- 查询开启简历公开的求职者 -->
+    <select id="findPublicResumeCandidates" resultType="java.lang.Long">
+        SELECT DISTINCT u.id
+        FROM sys_user u
+        INNER JOIN sys_user_profile up ON up.user_id = u.id
+        WHERE u.role = 'CANDIDATE'
+          AND u.status = 'ACTIVE'
+          AND up.resume_public = 1
+    </select>
+
+</mapper>

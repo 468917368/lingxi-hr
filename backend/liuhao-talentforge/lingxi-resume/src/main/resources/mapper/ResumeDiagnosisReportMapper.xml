@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.resume.mapper.ResumeDiagnosisReportMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="ResumeDiagnosisReport">
+        <id column="id" property="id"/>
+        <result column="resume_id" property="resumeId"/>
+        <result column="career" property="career"/>
+        <result column="file_url" property="fileUrl"/>
+        <result column="match_score" property="matchScore"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        id, resume_id, career, file_url, match_score, created_at
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume_diagnosis_report
+        WHERE id = #{id}
+    </select>
+
+    <!-- 查询诊断历史（按时间倒序，limit 控制返回条数） -->
+    <select id="selectByResumeIdAndCareer" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume_diagnosis_report
+        WHERE resume_id = #{resumeId}
+        <if test="career != null and career != ''">
+            AND career = #{career}
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询超出保留条数（keep）的最旧记录：跳过最近 keep 条，返回其余（历史裁剪用） -->
+    <select id="selectOverLimit" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume_diagnosis_report
+        WHERE resume_id = #{resumeId}
+        <if test="career != null and career != ''">
+            AND career = #{career}
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{keep}, 1000
+    </select>
+
+    <!-- 按 ID 批量删除（裁剪历史） -->
+    <delete id="deleteByIds">
+        DELETE FROM resume_diagnosis_report
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 插入记录 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO resume_diagnosis_report (
+            resume_id, career, file_url, match_score
+        ) VALUES (
+            #{resumeId}, #{career}, #{fileUrl}, #{matchScore}
+        )
+    </insert>
+
+</mapper>

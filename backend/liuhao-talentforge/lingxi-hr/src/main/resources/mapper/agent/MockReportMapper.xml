@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.hr.agent.mapper.MockReportMapper">
+
+    <insert id="insert" parameterType="MockReport" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO mock_report
+            (session_id, candidate_id, overall_score, overall_level,
+             tech_accuracy_score, expression_score, knowledge_depth_score, project_score,
+             highlights, weaknesses, improvement_plan, total_duration_sec,
+             answered_count, skipped_count, created_at)
+        VALUES
+            (#{sessionId}, #{candidateId}, #{overallScore}, #{overallLevel},
+             #{techAccuracyScore}, #{expressionScore}, #{knowledgeDepthScore}, #{projectScore},
+             #{highlights}, #{weaknesses}, #{improvementPlan}, #{totalDurationSec},
+             #{answeredCount}, #{skippedCount}, #{createdAt})
+    </insert>
+
+    <select id="selectBySessionId" parameterType="string" resultType="MockReport">
+        SELECT * FROM mock_report WHERE session_id = #{sessionId}
+    </select>
+
+</mapper>

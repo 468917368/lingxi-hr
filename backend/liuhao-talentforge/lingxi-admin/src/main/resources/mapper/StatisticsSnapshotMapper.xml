@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.admin.mapper.StatisticsSnapshotMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.lingxi.admin.domain.entity.StatisticsSnapshot">
+        <id column="id" property="id"/>
+        <result column="snapshot_date" property="snapshotDate"/>
+        <result column="user_count" property="userCount"/>
+        <result column="enterprise_count" property="enterpriseCount"/>
+        <result column="position_count" property="positionCount"/>
+        <result column="application_count" property="applicationCount"/>
+        <result column="interview_count" property="interviewCount"/>
+        <result column="offer_count" property="offerCount"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        id, snapshot_date, user_count, enterprise_count, position_count,
+        application_count, interview_count, offer_count, created_at
+    </sql>
+
+    <!-- 根据日期查询统计快照 -->
+    <select id="selectByDate" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM admin_statistics_snapshot
+        WHERE snapshot_date = #{snapshotDate}
+    </select>
+
+    <!-- 插入统计快照 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO admin_statistics_snapshot (snapshot_date, user_count, enterprise_count,
+            position_count, application_count, interview_count, offer_count)
+        VALUES (#{snapshotDate}, #{userCount}, #{enterpriseCount}, #{positionCount},
+            #{applicationCount}, #{interviewCount}, #{offerCount})
+    </insert>
+
+</mapper>

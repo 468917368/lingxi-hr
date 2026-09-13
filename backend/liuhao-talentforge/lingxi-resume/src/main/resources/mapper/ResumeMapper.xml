@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.resume.mapper.ResumeMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="Resume">
+        <id column="id" property="id"/>
+        <result column="candidate_id" property="candidateId"/>
+        <result column="file_name" property="fileName"/>
+        <result column="file_url" property="fileUrl"/>
+        <result column="file_format" property="fileFormat"/>
+        <result column="file_size" property="fileSize"/>
+        <result column="is_default" property="isDefault"/>
+        <result column="parse_status" property="parseStatus"/>
+        <result column="resume_md_url" property="resumeMdUrl"/>
+        <result column="face_photo_url" property="facePhotoUrl"/>
+        <result column="card_structure" property="cardStructure"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="wechat" property="wechat"/>
+        <result column="candidate_name" property="candidateName"/>
+        <result column="deleted_at" property="deletedAt"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        id, candidate_id, file_name, file_url, file_format, file_size,
+        is_default, parse_status, resume_md_url, face_photo_url, card_structure,
+        phone, email, wechat, candidate_name,
+        deleted_at, created_at, updated_at
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume
+        WHERE id = #{id} AND deleted_at IS NULL
+    </select>
+
+    <!-- 根据候选人ID查询列表 -->
+    <select id="selectByCandidateId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume
+        WHERE candidate_id = #{candidateId} AND deleted_at IS NULL
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 条件查询 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume
+        <where>
+            deleted_at IS NULL
+            <if test="candidateId != null">
+                AND candidate_id = #{candidateId}
+            </if>
+            <if test="parseStatus != null and parseStatus != ''">
+                AND parse_status = #{parseStatus}
+            </if>
+            <if test="isDefault != null">
+                AND is_default = #{isDefault}
+            </if>
+        </where>
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 统计候选人简历数量（5份上限） -->
+    <select id="countByCandidateId" resultType="int">
+        SELECT COUNT(*)
+        FROM resume
+        WHERE candidate_id = #{candidateId} AND deleted_at IS NULL
+    </select>
+
+    <!-- 查询候选人默认简历（投递未指定 resumeId 时使用） -->
+    <select id="selectDefaultByCandidateId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume
+        WHERE candidate_id = #{candidateId}
+          AND is_default = 1
+          AND deleted_at IS NULL
+        LIMIT 1
+    </select>
+
+    <!-- 插入记录（显式写入雪花ID：与 MinIO 对象路径/外部引用保持一致，避免自增ID错位） -->
+    <insert id="insert">
+        INSERT INTO resume (
+            id, candidate_id, file_name, file_url, file_format, file_size,
+            is_default, parse_status, resume_md_url, face_photo_url, card_structure,
+            phone, email, wechat, candidate_name
+        ) VALUES (
+            #{id}, #{candidateId}, #{fileName}, #{fileUrl}, #{fileFormat}, #{fileSize},
+            #{isDefault}, #{parseStatus}, #{resumeMdUrl}, #{facePhotoUrl}, #{cardStructure},
+            #{phone}, #{email}, #{wechat}, #{candidateName}
+        )
+    </insert>
+
+    <!-- 动态更新（仅非空字段） -->
+    <update id="updateById">
+        UPDATE resume
+        <set>
+            <if test="fileName != null">file_name = #{fileName},</if>
+            <if test="fileUrl != null">file_url = #{fileUrl},</if>
+            <if test="fileFormat != null">file_format = #{fileFormat},</if>
+            <if test="fileSize != null">file_size = #{fileSize},</if>
+            <if test="isDefault != null">is_default = #{isDefault},</if>
+            <if test="parseStatus != null">parse_status = #{parseStatus},</if>
+            <if test="resumeMdUrl != null">resume_md_url = #{resumeMdUrl},</if>
+            <if test="facePhotoUrl != null">face_photo_url = #{facePhotoUrl},</if>
+            <if test="cardStructure != null">card_structure = #{cardStructure},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="wechat != null">wechat = #{wechat},</if>
+            <if test="candidateName != null">candidate_name = #{candidateName},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id} AND deleted_at IS NULL
+    </update>
+
+    <!-- 取消候选人所有默认简历 -->
+    <update id="clearDefault">
+        UPDATE resume
+        SET is_default = 0, updated_at = NOW()
+        WHERE candidate_id = #{candidateId} AND deleted_at IS NULL
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteById">
+        UPDATE resume
+        SET deleted_at = NOW(), updated_at = NOW()
+        WHERE id = #{id} AND deleted_at IS NULL
+    </update>
+
+    <!-- 条件状态流转（防并发重复解析：仅当当前状态为 fromStatus 才流转） -->
+    <update id="updateParseStatus">
+        UPDATE resume
+        SET parse_status = #{toStatus}, updated_at = NOW()
+        WHERE id = #{id} AND parse_status = #{fromStatus} AND deleted_at IS NULL
+    </update>
+
+    <!-- 兜底扫描：解析中断/超时的记录（PENDING/PARSING 且更新时间早于阈值） -->
+    <select id="selectStaleForParse" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume
+        WHERE parse_status IN ('PENDING', 'PARSING')
+          AND updated_at &lt; #{staleBefore}
+          AND deleted_at IS NULL
+        ORDER BY updated_at ASC
+    </select>
+
+</mapper>

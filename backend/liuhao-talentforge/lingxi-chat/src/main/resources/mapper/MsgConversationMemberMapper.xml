@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.chat.mapper.MsgConversationMemberMapper">
+
+    <resultMap id="BaseResultMap" type="MsgConversationMember">
+        <id column="id" property="id"/>
+        <result column="conversation_id" property="conversationId"/>
+        <result column="user_id" property="userId"/>
+        <result column="member_role" property="memberRole"/>
+        <result column="unread_count" property="unreadCount"/>
+        <result column="is_top" property="isTop"/>
+        <result column="is_muted" property="isMuted"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="last_read_at" property="lastReadAt"/>
+        <result column="joined_at" property="joinedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, conversation_id, user_id, member_role, unread_count, is_top, is_muted, is_deleted, last_read_at, joined_at
+    </sql>
+
+    <!-- 插入会话成员 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO msg_conversation_member (conversation_id, user_id, member_role)
+        VALUES (#{conversationId}, #{userId}, #{memberRole})
+    </insert>
+
+    <!-- 查询会话的所有成员 -->
+    <select id="selectByConversationId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM msg_conversation_member
+        WHERE conversation_id = #{conversationId} AND is_deleted = 0
+    </select>
+
+    <!-- 查询用户在指定会话中的成员信息 -->
+    <select id="selectByConversationAndUser" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM msg_conversation_member
+        WHERE conversation_id = #{conversationId} AND user_id = #{userId}
+    </select>
+
+    <!-- 查询用户参与的所有会话成员记录 -->
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM msg_conversation_member
+        WHERE user_id = #{userId} AND is_deleted = 0
+        ORDER BY joined_at DESC
+    </select>
+
+    <!-- 批量查询会话的成员列表 -->
+    <select id="selectByConversationIds" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM msg_conversation_member
+        WHERE conversation_id IN
+        <foreach collection="conversationIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND is_deleted = 0
+    </select>
+
+    <!-- 更新未读数 -->
+    <update id="updateUnreadCount">
+        UPDATE msg_conversation_member
+        SET unread_count = #{unreadCount}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 增加未读数 -->
+    <update id="incrementUnreadCount">
+        UPDATE msg_conversation_member
+        SET unread_count = unread_count + 1
+        WHERE conversation_id = #{conversationId} AND user_id = #{userId} AND is_deleted = 0
+    </update>
+
+    <!-- 清零未读数 -->
+    <update id="clearUnreadCount">
+        UPDATE msg_conversation_member
+        SET unread_count = 0, last_read_at = NOW()
+        WHERE conversation_id = #{conversationId} AND user_id = #{userId}
+    </update>
+
+    <!-- 标记会话删除 -->
+    <update id="markDeleted">
+        UPDATE msg_conversation_member
+        SET is_deleted = 1
+        WHERE conversation_id = #{conversationId} AND user_id = #{userId}
+    </update>
+
+    <!-- 更新置顶状态 -->
+    <update id="updateIsTop">
+        UPDATE msg_conversation_member
+        SET is_top = #{isTop}
+        WHERE conversation_id = #{conversationId} AND user_id = #{userId}
+    </update>
+
+    <!-- 更新免打扰状态 -->
+    <update id="updateIsMuted">
+        UPDATE msg_conversation_member
+        SET is_muted = #{isMuted}
+        WHERE conversation_id = #{conversationId} AND user_id = #{userId}
+    </update>
+
+</mapper>

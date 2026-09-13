@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: lingxi-user
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+        group: DEFAULT_GROUP
+        namespace: lingxi
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+      config:
+        enabled: true
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        group: DEFAULT_GROUP
+        namespace: lingxi
+        file-extension: yml
+        refresh-enabled: true
+        # 共享配置（common配置）
+        shared-configs:
+          - data-id: lingxi-common.yml
+            group: DEFAULT_GROUP
+            refresh: true

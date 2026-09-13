@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.admin.mapper.HrDataMapper">
+
+    <!-- ==================== 企业统计 ==================== -->
+    <select id="countEnterprises" resultType="long">
+        SELECT COUNT(*) FROM hr_company
+    </select>
+
+    <select id="countTodayEnterprises" resultType="long">
+        SELECT COUNT(*) FROM hr_company
+        WHERE DATE(created_at) = CURDATE()
+    </select>
+
+    <!-- ==================== 岗位统计（按企业） ==================== -->
+    <select id="countJobsByCompany" resultType="map">
+        SELECT company_id AS companyId, COUNT(*) AS jobCount
+        FROM job_post
+        WHERE deleted_at IS NULL
+        GROUP BY company_id
+    </select>
+
+    <!-- ==================== 面试统计 ==================== -->
+    <select id="countInterviews" resultType="long">
+        SELECT COUNT(*) FROM hr_interview
+    </select>
+
+    <select id="countTodayInterviews" resultType="long">
+        SELECT COUNT(*) FROM hr_interview
+        WHERE DATE(created_at) = CURDATE()
+    </select>
+
+    <!-- ==================== Offer统计 ==================== -->
+    <select id="countOffers" resultType="long">
+        SELECT COUNT(*) FROM hr_offer
+        WHERE status IN ('SENT', 'ACCEPTED')
+    </select>
+
+    <select id="countTodayOffers" resultType="long">
+        SELECT COUNT(*) FROM hr_offer
+        WHERE DATE(created_at) = CURDATE()
+          AND status IN ('SENT', 'ACCEPTED')
+    </select>
+
+    <!-- ==================== HR列表（按企业分组） ==================== -->
+    <select id="listHRByEnterprise" resultType="map">
+        SELECT
+            c.id AS companyId,
+            c.name AS companyName,
+            m.user_id AS id,
+            u.name AS name,
+            u.phone AS phone,
+            u.email AS email,
+            m.department,
+            m.status,
+            m.interview_count AS interviewCount,
+            m.created_at AS createdAt
+        FROM hr_company_member m
+        JOIN hr_company c ON c.id = m.company_id
+        LEFT JOIN sys_user u ON u.id = m.user_id
+        WHERE m.role = 'HR_ADMIN'
+        ORDER BY c.id, m.created_at
+    </select>
+
+    <!-- ==================== 面试官列表（按企业分组） ==================== -->
+    <select id="listInterviewersByEnterprise" resultType="map">
+        SELECT
+            c.id AS companyId,
+            c.name AS companyName,
+            m.user_id AS id,
+            u.name AS name,
+            u.phone AS phone,
+            u.email AS email,
+            m.department,
+            m.status,
+            m.interview_count AS interviewCount,
+            m.created_at AS createdAt
+        FROM hr_company_member m
+        JOIN hr_company c ON c.id = m.company_id
+        LEFT JOIN sys_user u ON u.id = m.user_id
+        WHERE m.role = 'INTERVIEWER'
+        ORDER BY c.id, m.created_at
+    </select>
+
+    <!-- ==================== HR/面试官统计 ==================== -->
+    <select id="countHRByCompany" resultType="map">
+        SELECT company_id AS companyId, COUNT(*) AS hrCount
+        FROM hr_company_member
+        WHERE role = 'HR_ADMIN'
+        GROUP BY company_id
+    </select>
+
+    <!-- ==================== 企业排行（按HR对话次数） ==================== -->
+    <select id="getCompanyRankByConversation" resultType="map">
+        SELECT
+            c.id,
+            c.name,
+            COUNT(mc.id) AS conversationCount
+        FROM hr_company c
+        LEFT JOIN msg_conversation mc ON mc.company_id = c.id
+        GROUP BY c.id, c.name
+        ORDER BY conversationCount DESC
+        LIMIT 10
+    </select>
+
+    <!-- ==================== 禁用/启用用户 ==================== -->
+    <update id="disableUser">
+        UPDATE hr_company_member
+        SET status = 'DISABLED', updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="enableUser">
+        UPDATE hr_company_member
+        SET status = 'ACTIVE', updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>

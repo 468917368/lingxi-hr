@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.user.mapper.SysLoginLogMapper">
+
+    <resultMap id="BaseResultMap" type="SysLoginLog">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="login_ip" property="loginIp"/>
+        <result column="login_device" property="loginDevice"/>
+        <result column="login_location" property="loginLocation"/>
+        <result column="login_time" property="loginTime"/>
+        <result column="login_status" property="loginStatus"/>
+        <result column="fail_reason" property="failReason"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_id, login_ip, login_device, login_location, login_time, login_status, fail_reason
+    </sql>
+
+    <!-- 插入登录日志 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_login_log (user_id, login_ip, login_device, login_location, login_status, fail_reason)
+        VALUES (#{userId}, #{loginIp}, #{loginDevice}, #{loginLocation}, #{loginStatus}, #{failReason})
+    </insert>
+
+    <!-- 分页查询用户登录日志 -->
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM sys_login_log
+        WHERE user_id = #{userId}
+        ORDER BY login_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计用户登录日志总数 -->
+    <select id="countByUserId" resultType="long">
+        SELECT COUNT(*)
+        FROM sys_login_log
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 获取用户最后登录时间 -->
+    <select id="selectLastLoginTime" resultType="java.time.LocalDateTime">
+        SELECT MAX(login_time)
+        FROM sys_login_log
+        WHERE user_id = #{userId} AND login_status = 1
+    </select>
+
+</mapper>

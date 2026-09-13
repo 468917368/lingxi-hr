@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.admin.mapper.AnnouncementReadMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.lingxi.admin.domain.entity.AnnouncementRead">
+        <id column="id" property="id"/>
+        <result column="announcement_id" property="announcementId"/>
+        <result column="user_id" property="userId"/>
+        <result column="user_type" property="userType"/>
+        <result column="read_at" property="readAt"/>
+    </resultMap>
+
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        id, announcement_id, user_id, user_type, read_at
+    </sql>
+
+    <!-- 根据公告ID查询已读记录 -->
+    <select id="selectByAnnouncementId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM admin_announcement_read
+        WHERE announcement_id = #{announcementId}
+        ORDER BY read_at DESC
+    </select>
+
+    <!-- 统计公告已读数量 -->
+    <select id="countByAnnouncementId" resultType="long">
+        SELECT COUNT(*)
+        FROM admin_announcement_read
+        WHERE announcement_id = #{announcementId}
+    </select>
+
+    <!-- 插入已读记录 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO admin_announcement_read (announcement_id, user_id, user_type, read_at)
+        VALUES (#{announcementId}, #{userId}, #{userType}, #{readAt})
+    </insert>
+
+    <!-- 统计用户已读公告数（已发布公告） -->
+    <select id="countByUserIdAndType" resultType="int">
+        SELECT COUNT(DISTINCT ar.announcement_id)
+        FROM admin_announcement_read ar
+        JOIN admin_announcement a ON a.id = ar.announcement_id
+        WHERE ar.user_id = #{userId}
+          AND ar.user_type = #{userType}
+          AND a.status = 'PUBLISHED'
+    </select>
+
+    <!-- 幂等插入已读记录（忽略重复） -->
+    <insert id="insertIgnore">
+        INSERT IGNORE INTO admin_announcement_read (announcement_id, user_id, user_type, read_at)
+        VALUES (#{announcementId}, #{userId}, #{userType}, #{readAt})
+    </insert>
+
+</mapper>

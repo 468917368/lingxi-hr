@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.hr.mapper.HrInterviewEvaluationMapper">
+
+    <insert id="insert" parameterType="HrInterviewEvaluation" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO hr_interview_evaluation
+            (interview_id, conclusion, tech_score, communication_score, match_score, potential_score,
+             comment, feedback, is_draft, evaluator_id)
+        VALUES
+            (#{interviewId}, #{conclusion}, #{techScore}, #{communicationScore}, #{matchScore}, #{potentialScore},
+             #{comment}, #{feedback}, #{isDraft}, #{evaluatorId})
+    </insert>
+
+    <!-- 草稿覆盖转正式：仅更新非空字段 -->
+    <update id="updateById" parameterType="HrInterviewEvaluation">
+        UPDATE hr_interview_evaluation
+        <set>
+            <if test="conclusion != null">conclusion = #{conclusion},</if>
+            <if test="techScore != null">tech_score = #{techScore},</if>
+            <if test="communicationScore != null">communication_score = #{communicationScore},</if>
+            <if test="matchScore != null">match_score = #{matchScore},</if>
+            <if test="potentialScore != null">potential_score = #{potentialScore},</if>
+            <if test="comment != null">comment = #{comment},</if>
+            <if test="feedback != null">feedback = #{feedback},</if>
+            <if test="isDraft != null">is_draft = #{isDraft},</if>
+            <if test="evaluatorId != null">evaluator_id = #{evaluatorId},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectByInterviewId" resultType="HrInterviewEvaluation">
+        SELECT * FROM hr_interview_evaluation
+        WHERE interview_id = #{interviewId}
+    </select>
+
+    <select id="selectByInterviewIds" resultType="HrInterviewEvaluation">
+        SELECT * FROM hr_interview_evaluation
+        WHERE interview_id IN
+        <foreach collection="interviewIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+</mapper>

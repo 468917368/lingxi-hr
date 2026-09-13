@@ -1,0 +1,62 @@
+# 编译输出
+target/
+*.class
+*.jar
+*.war
+
+# IDE 文件
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# 文档
+docs/
+*.iws
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# 日志文件
+logs/
+*.log
+*.log.*
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 环境配置（敏感信息）
+.env
+*.env.local
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# Sentinel 日志
+logs/csp/
+
+# 临时文件
+*.tmp
+*.bak
+*.swp
+*~
+
+# Claude Code
+CLAUDE.md
+.claude/
+
+# Mock 数据（本地私有，不入库）
+lingxi-job/mock/
+/.playwright-mcp/
+
+# 部署产物（build-jars.sh 生成，不入库）
+deploy/services/
+deploy/infra/
+deploy/front-dist/

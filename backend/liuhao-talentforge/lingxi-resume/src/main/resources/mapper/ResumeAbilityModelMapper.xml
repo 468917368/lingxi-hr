@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.resume.mapper.ResumeAbilityModelMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="ResumeAbilityModel">
+        <id column="id" property="id"/>
+        <result column="candidate_id" property="candidateId"/>
+        <result column="resume_id" property="resumeId"/>
+        <result column="professional_skill_score" property="professionalSkillScore"/>
+        <result column="work_experience_score" property="workExperienceScore"/>
+        <result column="industry_knowledge_score" property="industryKnowledgeScore"/>
+        <result column="comprehensive_quality_score" property="comprehensiveQualityScore"/>
+        <result column="learning_growth_score" property="learningGrowthScore"/>
+        <result column="sub_dimensions" property="subDimensions"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        id, candidate_id, resume_id,
+        professional_skill_score, work_experience_score, industry_knowledge_score,
+        comprehensive_quality_score, learning_growth_score, sub_dimensions,
+        created_at, updated_at
+    </sql>
+
+    <!-- 根据简历ID查询 -->
+    <select id="selectByResumeId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume_ability_model
+        WHERE resume_id = #{resumeId}
+    </select>
+
+    <!-- 根据候选人ID查询 -->
+    <select id="selectByCandidateId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume_ability_model
+        WHERE candidate_id = #{candidateId}
+    </select>
+
+    <!-- 插入记录 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO resume_ability_model (
+            candidate_id, resume_id,
+            professional_skill_score, work_experience_score, industry_knowledge_score,
+            comprehensive_quality_score, learning_growth_score, sub_dimensions
+        ) VALUES (
+            #{candidateId}, #{resumeId},
+            #{professionalSkillScore}, #{workExperienceScore}, #{industryKnowledgeScore},
+            #{comprehensiveQualityScore}, #{learningGrowthScore}, #{subDimensions}
+        )
+    </insert>
+
+    <!-- 按简历ID覆盖更新（重新解析时用） -->
+    <update id="updateByResumeId">
+        UPDATE resume_ability_model
+        <set>
+            <if test="candidateId != null">candidate_id = #{candidateId},</if>
+            <if test="professionalSkillScore != null">professional_skill_score = #{professionalSkillScore},</if>
+            <if test="workExperienceScore != null">work_experience_score = #{workExperienceScore},</if>
+            <if test="industryKnowledgeScore != null">industry_knowledge_score = #{industryKnowledgeScore},</if>
+            <if test="comprehensiveQualityScore != null">comprehensive_quality_score = #{comprehensiveQualityScore},</if>
+            <if test="learningGrowthScore != null">learning_growth_score = #{learningGrowthScore},</if>
+            <if test="subDimensions != null">sub_dimensions = #{subDimensions},</if>
+            updated_at = NOW()
+        </set>
+        WHERE resume_id = #{resumeId}
+    </update>
+
+</mapper>

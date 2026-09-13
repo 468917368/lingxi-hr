@@ -1,0 +1,146 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+      routes:
+        # 用户服务（含管理员认证）
+        - id: lingxi-user
+          uri: lb://lingxi-user
+          predicates:
+            - Path=/api/v1/auth/**, /api/v1/user/**, /api/v1/agent/**, /api/v1/company/**, /api/v1/admin-auth/**
+          filters:
+            - StripPrefix=0
+
+        # 消息服务
+        - id: lingxi-chat
+          uri: lb://lingxi-chat
+          predicates:
+            - Path=/api/v1/conversations/**, /api/v1/notifications/**, /api/v1/messages/**
+          filters:
+            - StripPrefix=0
+
+        # 消息服务 - WebSocket
+        - id: lingxi-chat-ws
+          uri: lb:ws://lingxi-chat
+          predicates:
+            - Path=/ws/**
+          filters:
+            - StripPrefix=0
+
+        # 岗位服务
+        - id: lingxi-job
+          uri: lb://lingxi-job
+          predicates:
+            - Path=/api/v1/jobs/**, /api/v1/hr/jobs/**, /api/v1/hr/questions/**, /api/v1/favorites/**
+          filters:
+            - StripPrefix=0
+
+        # 简历服务
+        - id: lingxi-resume
+          uri: lb://lingxi-resume
+          predicates:
+            - Path=/api/v1/resumes/**, /api/v1/applications/**
+          filters:
+            - StripPrefix=0
+
+        # HR服务
+        # 通配 /api/v1/hr/**（account/notifications 等后续前缀无需再加）；/api/v1/hr/jobs/**、/api/v1/hr/questions/** 由上方 lingxi-job 路由先匹配
+        - id: lingxi-hr
+          uri: lb://lingxi-hr
+          predicates:
+            - Path=/api/v1/hr/**, /api/v1/mock-interview/**
+          filters:
+            - StripPrefix=0
+
+        # 管理服务（/api/v1/admin-auth/** 由 lingxi-user 处理）
+        - id: lingxi-admin
+          uri: lb://lingxi-admin
+          predicates:
+            - Path=/api/v1/admin/**
+          filters:
+            - StripPrefix=0
+
+        # 内部接口 - 用户服务
+        - id: lingxi-internal-user
+          uri: lb://lingxi-user
+          predicates:
+            - Path=/internal/users/**
+          filters:
+            - StripPrefix=0
+
+        # 内部接口 - 岗位服务
+        - id: lingxi-internal-job
+          uri: lb://lingxi-job
+          predicates:
+            - Path=/internal/jobs/**, /internal/positions/**
+          filters:
+            - StripPrefix=0
+
+        # 内部接口 - 简历服务
+        - id: lingxi-internal-resume
+          uri: lb://lingxi-resume
+          predicates:
+            - Path=/internal/resumes/**, /internal/applications/**
+          filters:
+            - StripPrefix=0
+
+        # 内部接口 - HR服务
+        - id: lingxi-internal-hr
+          uri: lb://lingxi-hr
+          predicates:
+            - Path=/internal/interviews/**, /internal/offers/**, /internal/companies/**
+          filters:
+            - StripPrefix=0
+
+        # 内部接口 - 消息服务
+        - id: lingxi-internal-chat
+          uri: lb://lingxi-chat
+          predicates:
+            - Path=/internal/conversations/**, /internal/notifications/**
+          filters:
+            - StripPrefix=0
+
+      # 跨域配置
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
+  # Redis配置
+  data:
+    redis:
+      database: 0
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASS:123456}
+      timeout: 5s
+      connect-timeout: 5s
+      lettuce:
+        protocol: RESP2
+        pool:
+          max-active: 50
+          max-wait: -1ms
+          min-idle: 5
+          max-idle: 20
+
+# JWT配置（兜底，Nacos配置优先）
+jwt:
+  secret: lingxi-backend-jwt-secret-key-2026-minimum-256-bits
+
+logging:
+  level:
+    com.lingxi.gateway: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+
+# Sentinel日志目录（通过JVM参数设置）
+# 启动时添加: -Dcsp.sentinel.log.dir=./logs/csp
+# 或使用 start-gateway.bat 启动脚本

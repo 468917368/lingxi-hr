@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.hr.mapper.HrCompanyMapper">
+
+    <resultMap id="BaseResultMap" type="HrCompany">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="short_name" property="shortName"/>
+        <result column="description" property="description"/>
+        <result column="industry" property="industry"/>
+        <result column="scale" property="scale"/>
+        <result column="logo_url" property="logoUrl"/>
+        <result column="address" property="address"/>
+        <result column="website" property="website"/>
+        <result column="invite_code" property="inviteCode"/>
+        <result column="business_license_url" property="businessLicenseUrl"/>
+        <result column="cert_status" property="certStatus"/>
+        <result column="cert_reject_reason" property="certRejectReason"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, name, short_name, description, industry, scale, logo_url, address, website,
+        invite_code, business_license_url, cert_status, cert_reject_reason, status, created_at, updated_at
+    </sql>
+
+    <!-- 插入企业 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO hr_company (name, short_name, description, industry, scale, logo_url, address, website,
+            invite_code, business_license_url, cert_status, cert_reject_reason, status)
+        VALUES (#{name}, #{shortName}, #{description}, #{industry}, #{scale}, #{logoUrl}, #{address}, #{website},
+            #{inviteCode}, #{businessLicenseUrl}, #{certStatus}, #{certRejectReason}, #{status})
+    </insert>
+
+    <!-- 按ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_company
+        WHERE id = #{id}
+    </select>
+
+    <!-- 按邀请码查询 -->
+    <select id="selectByInviteCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_company
+        WHERE invite_code = #{inviteCode}
+    </select>
+
+    <!-- 按ID更新（动态set，name不更新） -->
+    <update id="updateById">
+        UPDATE hr_company
+        <set>
+            <if test="shortName != null">short_name = #{shortName},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="industry != null">industry = #{industry},</if>
+            <if test="scale != null">scale = #{scale},</if>
+            <if test="logoUrl != null">logo_url = #{logoUrl},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="website != null">website = #{website},</if>
+            <if test="businessLicenseUrl != null">business_license_url = #{businessLicenseUrl},</if>
+            <if test="certStatus != null">cert_status = #{certStatus},</if>
+            <if test="certRejectReason != null">cert_reject_reason = #{certRejectReason},</if>
+            <if test="status != null">status = #{status},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 刷新企业邀请码 -->
+    <update id="updateInviteCode">
+        UPDATE hr_company
+        SET invite_code = #{inviteCode},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+</mapper>

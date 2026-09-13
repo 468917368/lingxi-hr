@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.user.mapper.SysUserProfileMapper">
+
+    <resultMap id="BaseResultMap" type="SysUserProfile">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="gender" property="gender"/>
+        <result column="city" property="city"/>
+        <result column="work_years" property="workYears"/>
+        <result column="education" property="education"/>
+        <result column="job_status" property="jobStatus"/>
+        <result column="desired_job" property="desiredJob"/>
+        <result column="desired_city" property="desiredCity"/>
+        <result column="desired_salary_min" property="desiredSalaryMin"/>
+        <result column="desired_salary_max" property="desiredSalaryMax"/>
+        <result column="available_from" property="availableFrom"/>
+        <result column="resume_public" property="resumePublic"/>
+        <result column="blind_mode" property="blindMode"/>
+        <result column="match_notify" property="matchNotify"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_id, gender, city, work_years, education, job_status,
+        desired_job, desired_city, desired_salary_min, desired_salary_max,
+        available_from, resume_public, blind_mode, match_notify, created_at, updated_at
+    </sql>
+
+    <!-- 根据用户ID查询画像 -->
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM sys_user_profile
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 插入画像 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_user_profile (
+            user_id, gender, city, work_years, education, job_status,
+            desired_job, desired_city, desired_salary_min, desired_salary_max,
+            available_from, resume_public, blind_mode, match_notify
+        ) VALUES (
+            #{userId}, #{gender}, #{city}, #{workYears}, #{education}, #{jobStatus},
+            #{desiredJob}, #{desiredCity}, #{desiredSalaryMin}, #{desiredSalaryMax},
+            #{availableFrom}, #{resumePublic}, #{blindMode}, #{matchNotify}
+        )
+    </insert>
+
+    <!-- 更新画像 -->
+    <update id="updateByUserId">
+        UPDATE sys_user_profile
+        <set>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="city != null">city = #{city},</if>
+            <if test="workYears != null">work_years = #{workYears},</if>
+            <if test="education != null">education = #{education},</if>
+            <if test="jobStatus != null">job_status = #{jobStatus},</if>
+            <if test="desiredJob != null">desired_job = #{desiredJob},</if>
+            <if test="desiredCity != null">desired_city = #{desiredCity},</if>
+            <if test="desiredSalaryMin != null">desired_salary_min = #{desiredSalaryMin},</if>
+            <if test="desiredSalaryMax != null">desired_salary_max = #{desiredSalaryMax},</if>
+            <if test="availableFrom != null">available_from = #{availableFrom},</if>
+            <if test="resumePublic != null">resume_public = #{resumePublic},</if>
+            <if test="blindMode != null">blind_mode = #{blindMode},</if>
+            <if test="matchNotify != null">match_notify = #{matchNotify},</if>
+            updated_at = NOW()
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>

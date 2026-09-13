@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.job.mapper.JobFavoriteMapper">
+
+    <!-- 按候选人+岗位查收藏（幂等判断） -->
+    <select id="selectByCandidateAndJob" resultType="com.lingxi.job.domain.entity.JobFavorite">
+        SELECT id, candidate_id, job_id, created_at
+        FROM job_favorite
+        WHERE candidate_id = #{candidateId} AND job_id = #{jobId}
+    </select>
+
+    <!-- 新增收藏（uk_candidate_job 唯一键幂等兜底） -->
+    <insert id="insert" parameterType="com.lingxi.job.domain.entity.JobFavorite"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO job_favorite (candidate_id, job_id, created_at)
+        VALUES (#{candidateId}, #{jobId}, #{createdAt})
+    </insert>
+
+    <!-- 按候选人+岗位物理删除（取消收藏，幂等） -->
+    <delete id="deleteByCandidateAndJob">
+        DELETE FROM job_favorite
+        WHERE candidate_id = #{candidateId} AND job_id = #{jobId}
+    </delete>
+
+    <!--
+        候选人收藏分页列表（LEFT JOIN 防历史收藏关联异常/物理缺失岗位时整条记录丢失；PageHelper 分页不写 LIMIT）
+        - job_id 必须取 f.job_id（收藏表主键）：物理缺失岗位仍保留，供前端识别/取消；不可取 j.id（缺失时为 null）
+        - 不排除 j.deleted_at IS NULL：逻辑删除岗位仍在列表，由 deleted/is_offline 布尔标记（保留收藏记录决策）
+        - 布尔字段显式 CASE 包裹（LEFT JOIN 后 j.id 可能为 NULL，直接判 j.deleted_at/j.status 会得 false/NULL）
+    -->
+    <select id="selectFavoriteList" resultType="com.lingxi.job.domain.vo.FavoriteJobVO">
+        SELECT
+            f.job_id AS jobId,
+            j.title AS title,
+            j.industry_group_code AS industryGroupCode,
+            j.industry_code AS industryCode,
+            j.city_code AS cityCode,
+            j.city_name AS cityName,
+            j.salary_min_amount AS salaryMinAmount,
+            j.salary_max_amount AS salaryMaxAmount,
+            j.salary_currency AS salaryCurrency,
+            j.salary_period AS salaryPeriod,
+            j.salary_months AS salaryMonths,
+            j.is_salary_negotiable AS salaryNegotiable,
+            j.salary_raw_text AS salaryRawText,
+            j.min_experience_years AS minExperienceYears,
+            j.education_requirement AS educationRequirement,
+            j.published_at AS publishedAt,
+            f.created_at AS favoritedAt,
+            CASE WHEN j.id IS NULL OR j.deleted_at IS NOT NULL THEN TRUE ELSE FALSE END AS deleted,
+            CASE WHEN j.id IS NULL OR j.deleted_at IS NOT NULL OR j.status &lt;&gt; 'PUBLISHED'
+                 THEN TRUE ELSE FALSE END AS is_offline
+        FROM job_favorite f
+        LEFT JOIN job_post j ON j.id = f.job_id
+        WHERE f.candidate_id = #{candidateId}
+        ORDER BY f.created_at DESC, f.id DESC
+    </select>
+
+    <!-- 候选人收藏的岗位 ID 集合（空集合返回 []） -->
+    <select id="selectJobIdsByCandidateId" resultType="java.lang.Long">
+        SELECT job_id
+        FROM job_favorite
+        WHERE candidate_id = #{candidateId}
+        ORDER BY created_at DESC, id DESC
+    </select>
+
+</mapper>

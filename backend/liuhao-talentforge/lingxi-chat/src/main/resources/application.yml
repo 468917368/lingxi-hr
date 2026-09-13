@@ -1,0 +1,78 @@
+server:
+  port: 8087
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  datasource:
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:lingxi}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: ${DB_USER:root}
+    password: ${DB_PASS:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 3000
+  redis:
+    host: ${REDIS_HOST:127.0.0.1}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASS:123456}
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.lingxi.chat.domain.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+  sentinel:
+    enabled: true
+
+# RocketMQ
+rocketmq:
+  name-server: ${ROCKETMQ_NAMESRV:127.0.0.1:9876}
+  producer:
+    group: chat-producer-group
+
+# JWT配置
+jwt:
+  secret: ${JWT_SECRET:lingxi-backend-jwt-secret-key-2026-minimum-256-bits}
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.lingxi: DEBUG
+    com.lingxi.chat: DEBUG
+    com.lingxi.common: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: ./logs/lingxi-chat.log
+
+# 存储配置（通过Nacos common配置覆盖）
+storage:
+  type: minio
+  minio:
+    endpoint: http://127.0.0.1:9000
+    access-key: quanxiaoha
+    secret-key: quanxiaoha
+    bucket-name: hrms
+
+# Sentinel日志目录
+sentinel:
+  log:
+    dir: ./logs/csp

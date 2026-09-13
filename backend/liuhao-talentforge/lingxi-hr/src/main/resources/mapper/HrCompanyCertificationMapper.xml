@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.hr.mapper.HrCompanyCertificationMapper">
+
+    <resultMap id="BaseResultMap" type="HrCompanyCertification">
+        <id column="id" property="id"/>
+        <result column="company_id" property="companyId"/>
+        <result column="applicant_id" property="applicantId"/>
+        <result column="business_license_url" property="businessLicenseUrl"/>
+        <result column="cert_material_url" property="certMaterialUrl"/>
+        <result column="status" property="status"/>
+        <result column="reject_reason" property="rejectReason"/>
+        <result column="reviewer_id" property="reviewerId"/>
+        <result column="reviewed_at" property="reviewedAt"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, company_id, applicant_id, business_license_url, cert_material_url, status,
+        reject_reason, reviewer_id, reviewed_at, created_at, updated_at
+    </sql>
+
+    <!-- 插入认证申请 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO hr_company_certification (company_id, applicant_id, business_license_url, cert_material_url, status)
+        VALUES (#{companyId}, #{applicantId}, #{businessLicenseUrl}, #{certMaterialUrl}, #{status})
+    </insert>
+
+    <!-- 按企业ID查询待审核认证申请 -->
+    <select id="selectPendingByCompanyId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_company_certification
+        WHERE company_id = #{companyId} AND status = 'PENDING'
+        LIMIT 1
+    </select>
+
+</mapper>

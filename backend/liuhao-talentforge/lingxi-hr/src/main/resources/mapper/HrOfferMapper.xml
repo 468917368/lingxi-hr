@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.hr.mapper.HrOfferMapper">
+
+    <sql id="Base_Column_List">
+        id, company_id, application_id, candidate_id, job_id,
+        salary, entry_date, level, remark, status, expires_at,
+        accepted_at, rejected_at, reject_reason, urge_count, last_urge_at,
+        last_sync_time, created_at, updated_at
+    </sql>
+
+    <!-- Snowflake id 应用侧显式提供，非自增 -->
+    <insert id="insert" parameterType="HrOffer">
+        INSERT INTO hr_offer
+            (id, company_id, application_id, candidate_id, job_id,
+             salary, entry_date, level, remark, status, expires_at,
+             accepted_at, rejected_at, reject_reason, urge_count, last_urge_at, last_sync_time)
+        VALUES
+            (#{id}, #{companyId}, #{applicationId}, #{candidateId}, #{jobId},
+             #{salary}, #{entryDate}, #{level}, #{remark}, #{status}, #{expiresAt},
+             #{acceptedAt}, #{rejectedAt}, #{rejectReason}, #{urgeCount}, #{lastUrgeAt}, #{lastSyncTime})
+    </insert>
+
+    <select id="selectById" parameterType="long" resultType="HrOffer">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_offer
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByApplicationId" parameterType="long" resultType="HrOffer">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_offer
+        WHERE application_id = #{applicationId}
+        ORDER BY id DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectByApplicationIdForUpdate" parameterType="long" resultType="HrOffer">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_offer
+        WHERE application_id = #{applicationId}
+        ORDER BY id DESC
+        LIMIT 1
+        FOR UPDATE
+    </select>
+
+    <select id="selectByIdForUpdate" parameterType="long" resultType="HrOffer">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_offer
+        WHERE id = #{id}
+        FOR UPDATE
+    </select>
+
+    <!-- 列表条件（公司隔离 + 可选过滤），dateRange 按 created_at 过滤 -->
+    <sql id="Page_Filter">
+        company_id = #{companyId}
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        <if test="jobId != null">
+            AND job_id = #{jobId}
+        </if>
+        <if test="dateRange == 'TODAY'">
+            AND created_at &gt;= CURDATE() AND created_at &lt; DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+        </if>
+        <if test="dateRange == 'WEEK'">
+            AND created_at &gt;= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        </if>
+        <if test="dateRange == 'MONTH'">
+            AND created_at &gt;= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        </if>
+    </sql>
+
+    <select id="countPage" resultType="long">
+        SELECT COUNT(*)
+        FROM hr_offer
+        WHERE <include refid="Page_Filter"/>
+    </select>
+
+    <select id="selectPage" resultType="HrOffer">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_offer
+        WHERE <include refid="Page_Filter"/>
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 乐观锁状态流转：仅当当前状态为 fromStatus 时更新 -->
+    <update id="updateAccept">
+        UPDATE hr_offer
+        SET status = 'ACCEPTED', accepted_at = NOW()
+        WHERE id = #{id} AND status = #{fromStatus}
+    </update>
+
+    <update id="updateReject">
+        UPDATE hr_offer
+        SET status = 'REJECTED', rejected_at = NOW(), reject_reason = #{rejectReason}
+        WHERE id = #{id} AND status = #{fromStatus}
+    </update>
+
+    <update id="updateExpire">
+        UPDATE hr_offer
+        SET status = 'EXPIRED'
+        WHERE id = #{id} AND status = #{fromStatus}
+    </update>
+
+    <update id="updateWithdraw">
+        UPDATE hr_offer
+        SET status = 'WITHDRAWN'
+        WHERE id = #{id} AND status = #{fromStatus}
+    </update>
+
+    <!-- 催促：urge_count 累加 + 最近催促时间；仅 SENT 可催（服务层已校验，WHERE 兜底） -->
+    <update id="updateUrge">
+        UPDATE hr_offer
+        SET urge_count = urge_count + 1, last_urge_at = NOW()
+        WHERE id = #{id} AND status = 'SENT'
+    </update>
+
+    <update id="updateSyncTime">
+        UPDATE hr_offer
+        SET last_sync_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 过期扫描：SENT 且 expires_at <= NOW() -->
+    <select id="selectExpiredSnt" resultType="HrOffer">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_offer
+        WHERE status = 'SENT' AND expires_at &lt;= NOW()
+        ORDER BY expires_at ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 对账扫描：终态且从未补偿对账 -->
+    <select id="selectTerminalForReconcile" resultType="HrOffer">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_offer
+        WHERE status IN ('REJECTED', 'EXPIRED', 'WITHDRAWN')
+          AND last_sync_time IS NULL
+        ORDER BY created_at ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 批量查已存在 Offer 记录的投递ID（候选人列表 hasOfferRecord，任意状态含终态；2026-08-07 语义修正：原 SENT 过滤在新状态机下对 OFFERABLE 列表恒 false） -->
+    <select id="selectOfferRecordAppIds" resultType="long">
+        SELECT application_id
+        FROM hr_offer
+        WHERE application_id IN
+        <foreach collection="applicationIds" item="appId" open="(" separator="," close=")">
+            #{appId}
+        </foreach>
+    </select>
+
+    <!-- 批量查每投递最新一条 Offer 的状态（候选人列表 lastOfferStatus，2026-08-07 前端清单） -->
+    <select id="selectLastOfferStatus" resultType="HrOffer">
+        SELECT o.application_id, o.status
+        FROM hr_offer o
+        INNER JOIN (
+            SELECT application_id, MAX(id) AS max_id
+            FROM hr_offer
+            WHERE application_id IN
+            <foreach collection="applicationIds" item="appId" open="(" separator="," close=")">
+                #{appId}
+            </foreach>
+            GROUP BY application_id
+        ) t ON o.id = t.max_id
+    </select>
+
+</mapper>

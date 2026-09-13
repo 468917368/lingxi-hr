@@ -1,0 +1,57 @@
+# 开发环境配置
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/lingxi?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: 123456
+
+# 文件存储配置
+storage:
+  type: aliyun-oss
+  minio:
+    endpoint: http://127.0.0.1:9000
+    access-key: quanxiaoha
+    secret-key: quanxiaoha
+    bucket-name: hrms
+  aliyun-oss:
+    endpoint: oss-cn-guangzhou.aliyuncs.com
+    access-key-id: your-oss-access-key-id
+    access-key-secret: your-oss-access-key-secret
+    bucket-name: lingxi-h
+
+# 阿里云短信配置
+aliyun:
+  accessKeyId: your-sms-access-key-id
+  accessKeySecret: your-sms-access-key-secret
+  sms:
+    mock: true
+    sign-name: 速通互联验证码
+    template-code: 100001
+
+logging:
+  level:
+    com.lingxi.${f#lingxi-}: DEBUG
+
+# 简历解析 Agent 配置
+resume:
+  agent:
+    mock: false       # false=真实百宝箱 Agent（RealBaibaoxiangClient），true=Mock 本地规则引擎
+
+# RocketMQ 消费者控制（本地 MQ 未启动时置 false 避免应用启动失败；MQ 就绪后置 true 或删除该节）
+rocketmq:
+  consumer:
+    listeners:
+      resume-service-consumer:
+        interview-event: false
+
+# 百宝箱智能体平台配置（真实接入，mock=false 时生效）
+# 注：解析/诊断共用一个 appId，由百宝箱工作流内部3节点路由区分业务
+baibaoxiang:
+  app-id: your-baibaoxiang-app-id
+  api:
+    url: https://api.tbox.cn/api/chat
+    auth: your-baibaoxiang-api-auth

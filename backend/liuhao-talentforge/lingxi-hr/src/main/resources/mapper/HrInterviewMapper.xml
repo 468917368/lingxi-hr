@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.hr.mapper.HrInterviewMapper">
+
+    <insert id="insert" parameterType="HrInterview" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO hr_interview
+            (company_id, application_id, interviewer_id, candidate_id, job_id,
+             scheduled_at, method, location, remark, candidate_note, status)
+        VALUES
+            (#{companyId}, #{applicationId}, #{interviewerId}, #{candidateId}, #{jobId},
+             #{scheduledAt}, #{method}, #{location}, #{remark}, #{candidateNote}, #{status})
+    </insert>
+
+    <sql id="Base_Column_List">
+        id, company_id, application_id, interviewer_id, candidate_id, job_id,
+        scheduled_at, method, location, remark, candidate_note, status, created_at, updated_at
+    </sql>
+
+    <!-- 列表条件（公司隔离 + 可选过滤），dateRange 按 scheduled_at 过滤 -->
+    <sql id="Page_Filter">
+        company_id = #{companyId}
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        <if test="jobId != null">
+            AND job_id = #{jobId}
+        </if>
+        <if test="interviewerId != null">
+            AND interviewer_id = #{interviewerId}
+        </if>
+        <if test="method != null and method != ''">
+            AND method = #{method}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND candidate_id IN (SELECT id FROM sys_user WHERE name LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="dateRange == 'TODAY'">
+            AND scheduled_at &gt;= CURDATE() AND scheduled_at &lt; DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+        </if>
+        <if test="dateRange == 'WEEK'">
+            AND scheduled_at &gt;= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        </if>
+        <if test="dateRange == 'MONTH'">
+            AND scheduled_at &gt;= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        </if>
+    </sql>
+
+    <select id="selectById" parameterType="long" resultType="HrInterview">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_interview
+        WHERE id = #{id}
+    </select>
+
+    <select id="countPage" resultType="long">
+        SELECT COUNT(*)
+        FROM hr_interview
+        WHERE <include refid="Page_Filter"/>
+    </select>
+
+    <select id="selectPage" resultType="HrInterview">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hr_interview
+        WHERE <include refid="Page_Filter"/>
+        ORDER BY scheduled_at DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 乐观锁状态变更：仅当当前状态为 fromStatus 时更新为 toStatus -->
+    <update id="updateStatus">
+        UPDATE hr_interview
+        SET status = #{toStatus}
+        WHERE id = #{id} AND status = #{fromStatus}
+    </update>
+
+    <!-- 时间冲突：同面试官非终态面试的预约时间与 [start, end] 重叠 -->
+    <select id="countByInterviewerInTimeRange" resultType="int">
+        SELECT COUNT(*)
+        FROM hr_interview
+        WHERE interviewer_id = #{interviewerId}
+          AND status &lt;&gt; 'CANCELLED'
+          AND scheduled_at &gt;= #{start}
+          AND scheduled_at &lt;= #{end}
+    </select>
+
+    <!-- 待评估列表：已开始（IN_PROGRESS）且无正式评估（is_draft=0）；存草稿仍算待评估 -->
+    <select id="selectPendingEvaluations" resultType="HrInterview">
+        SELECT i.id, i.company_id, i.application_id, i.interviewer_id, i.candidate_id, i.job_id,
+               i.scheduled_at, i.method, i.location, i.remark, i.candidate_note, i.status, i.created_at, i.updated_at
+        FROM hr_interview i
+        LEFT JOIN hr_interview_evaluation ev ON ev.interview_id = i.id AND ev.is_draft = 0
+        WHERE i.company_id = #{companyId}
+          AND i.status = 'IN_PROGRESS'
+          <if test="interviewerId != null">AND i.interviewer_id = #{interviewerId}</if>
+          AND ev.id IS NULL
+        ORDER BY i.scheduled_at ASC
+    </select>
+
+    <!-- 某面试官负责的投递ID集合（候选人列表范围限定） -->
+    <select id="selectApplicationIdsByInterviewer" resultType="long">
+        SELECT DISTINCT application_id
+        FROM hr_interview
+        WHERE company_id = #{companyId}
+          AND interviewer_id = #{interviewerId}
+          AND application_id IS NOT NULL
+    </select>
+
+</mapper>

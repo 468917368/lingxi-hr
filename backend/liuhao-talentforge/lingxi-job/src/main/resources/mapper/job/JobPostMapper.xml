@@ -1,0 +1,625 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.job.mapper.JobPostMapper">
+
+    <sql id="Base_Column_List">
+        id, company_id, title, industry_group_code, industry_code, city_code, city_name,
+        min_experience_years, education_requirement, salary_min_amount, salary_max_amount,
+        salary_currency, salary_period, salary_months, is_salary_negotiable, salary_raw_text,
+        total_hc, reserved_hc, confirmed_hc, jd_text, jd_summary, status, pause_reason,
+        close_reason, published_at, closed_at, expires_at, version, created_by, updated_by,
+        created_at, updated_at, deleted_at
+    </sql>
+
+    <!-- 按ID查询岗位（内部公共查询，仅按 jobId） -->
+    <select id="selectById" resultType="com.lingxi.job.domain.entity.JobPost">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM job_post
+        WHERE id = #{id} AND deleted_at IS NULL
+    </select>
+
+    <!-- 按ID+企业ID查询岗位（企业隔离，HR 端使用） -->
+    <select id="selectByIdAndCompanyId" resultType="com.lingxi.job.domain.entity.JobPost">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM job_post
+        WHERE id = #{id} AND company_id = #{companyId} AND deleted_at IS NULL
+    </select>
+
+    <!-- 按ID查询岗位并加行锁（HC 操作使用） -->
+    <select id="selectByIdForUpdate" resultType="com.lingxi.job.domain.entity.JobPost">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM job_post
+        WHERE id = #{id} AND deleted_at IS NULL
+        FOR UPDATE
+    </select>
+
+    <sql id="InternalSearch_Where">
+        <where>
+            p.deleted_at IS NULL
+            AND p.status = 'PUBLISHED'
+            <!-- 多关键词扩展搜索（OR） -->
+            <if test="q.keywords != null and q.keywords.size() > 0">
+                AND (
+                <foreach collection="q.keywords" item="kw" separator=" OR ">
+                    p.title LIKE CONCAT('%', #{kw}, '%')
+                </foreach>
+                )
+            </if>
+            <!-- 单关键词回退 -->
+            <if test="(q.keywords == null or q.keywords.size() == 0) and q.keyword != null and q.keyword != ''">
+                AND (p.title LIKE CONCAT('%', #{q.keyword}, '%')
+                OR p.jd_summary LIKE CONCAT('%', #{q.keyword}, '%'))
+            </if>
+            <if test="q.cityCode != null and q.cityCode != ''">
+                AND p.city_code = #{q.cityCode}
+            </if>
+            <if test="q.industryCode != null and q.industryCode != ''">
+                AND p.industry_code = #{q.industryCode}
+            </if>
+            <if test="q.jobType != null and q.jobType != ''">
+                AND pf.job_type = #{q.jobType}
+            </if>
+            <if test="q.company != null and q.company != ''">
+                AND p.company_id IN (SELECT id FROM hr_company WHERE name LIKE CONCAT('%', #{q.company}, '%'))
+            </if>
+        </where>
+    </sql>
+
+    <!-- 内部岗位搜索（仅 PUBLISHED，JOIN job_profile 取画像，PageHelper 分页不写 LIMIT） -->
+    <select id="selectForInternalSearch" resultType="com.lingxi.job.domain.vo.InternalJobCardVO">
+        SELECT
+            p.id AS jobId,
+            p.title,
+            p.company_id AS companyId,
+            hc.name AS companyName,
+            p.city_code AS cityCode,
+            p.city_name AS cityName,
+            p.industry_code AS industryCode,
+            pf.job_type AS jobType,
+            p.salary_min_amount AS salaryMinAmount,
+            p.salary_max_amount AS salaryMaxAmount,
+            p.is_salary_negotiable AS salaryNegotiable,
+            pf.core_skills AS skillTagsRaw,
+            p.status,
+            p.total_hc AS totalHc,
+            (p.total_hc - p.reserved_hc - p.confirmed_hc) AS availableHc,
+            p.published_at AS publishedAt
+        FROM job_post p
+        LEFT JOIN job_profile pf ON pf.job_id = p.id
+        LEFT JOIN hr_company hc ON hc.id = p.company_id
+        <include refid="InternalSearch_Where"/>
+        ORDER BY p.published_at DESC, p.id DESC
+    </select>
+
+    <!-- 企业岗位轻量列表：只查 job_post，不 JOIN job_profile，避免联合唯一键之外的记录放大 -->
+    <select id="selectByCompanyId" resultType="com.lingxi.job.domain.vo.InternalCompanyJobVO">
+        SELECT p.id AS jobId,
+               p.title,
+               p.status,
+               (p.total_hc - p.reserved_hc - p.confirmed_hc) AS availableHc
+        FROM job_post p
+        WHERE p.company_id = #{companyId}
+          AND p.deleted_at IS NULL
+        ORDER BY p.published_at DESC, p.id DESC
+    </select>
+
+    <!-- 岗位总数（排除已删除） -->
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM job_post WHERE deleted_at IS NULL
+    </select>
+
+    <!-- 今日新增岗位数 -->
+    <select id="countToday" resultType="long">
+        SELECT COUNT(*) FROM job_post WHERE deleted_at IS NULL AND created_at &gt;= CURDATE()
+    </select>
+
+    <!-- 岗位类型分布统计 -->
+    <select id="selectJobTypeDistribution" resultType="com.lingxi.job.domain.vo.JobTypeDistributionVO">
+        SELECT
+            COALESCE(pf.job_type, 'UNKNOWN') AS jobType,
+            COUNT(*) AS count
+        FROM job_post p
+        LEFT JOIN job_profile pf ON pf.job_id = p.id
+        WHERE p.deleted_at IS NULL
+        GROUP BY COALESCE(pf.job_type, 'UNKNOWN')
+    </select>
+
+    <!-- HC 计数 + 状态 + 原因 + 时间一次 UPDATE（乐观锁 version；HC 状态自动管理唯一写入口） -->
+    <update id="updateHcAndStatus" parameterType="com.lingxi.job.domain.entity.JobPost">
+        UPDATE job_post
+        SET reserved_hc = #{reservedHc},
+            confirmed_hc = #{confirmedHc},
+            status = #{status},
+            pause_reason = #{pauseReason},
+            close_reason = #{closeReason},
+            closed_at = #{closedAt},
+            published_at = #{publishedAt},
+            version = version + 1,
+            updated_at = NOW()
+        WHERE id = #{id} AND version = #{version} AND deleted_at IS NULL
+    </update>
+
+    <sql id="AdminList_Where">
+        <where>
+            p.deleted_at IS NULL
+            <!-- 企业端查询：传 companyId 时严格按企业隔离 -->
+            <if test="q.companyId != null">
+                AND p.company_id = #{q.companyId}
+            </if>
+            <if test="q.status != null and q.status != ''">
+                AND p.status = #{q.status}
+            </if>
+            <if test="q.keyword != null and q.keyword != ''">
+                AND p.title LIKE CONCAT('%', #{q.keyword}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <!-- 管理员分页查询（企业端，companyId 过滤，PageHelper 分页） -->
+    <select id="selectAdminList" resultType="com.lingxi.job.domain.vo.AdminJobListVO">
+        SELECT
+            p.id AS jobId,
+            p.company_id AS companyId,
+            p.title,
+            p.city_name AS cityName,
+            p.salary_min_amount AS salaryMinAmount,
+            p.salary_max_amount AS salaryMaxAmount,
+            p.is_salary_negotiable AS salaryNegotiable,
+            p.status,
+            p.total_hc AS totalHc,
+            p.reserved_hc AS reservedHc,
+            p.confirmed_hc AS confirmedHc,
+            (p.total_hc - p.reserved_hc - p.confirmed_hc) AS availableHc,
+            pf.job_type AS jobType,
+            pf.core_skills AS skillTagsRaw,
+            p.published_at AS publishedAt,
+            p.version AS version
+        FROM job_post p
+        LEFT JOIN job_profile pf ON pf.job_id = p.id
+        <include refid="AdminList_Where"/>
+        ORDER BY p.updated_at DESC, p.id DESC
+    </select>
+
+    <!-- HR 岗位分页列表（companyId 强制过滤，JOIN job_profile，PageHelper 分页不写 LIMIT） -->
+    <select id="selectHrList" resultType="com.lingxi.job.domain.vo.HrJobListVO">
+        SELECT
+            p.id AS jobId,
+            p.title,
+            p.status,
+            p.city_code AS cityCode,
+            p.city_name AS cityName,
+            p.salary_min_amount AS salaryMinAmount,
+            p.salary_max_amount AS salaryMaxAmount,
+            p.salary_currency AS salaryCurrency,
+            p.salary_period AS salaryPeriod,
+            p.salary_months AS salaryMonths,
+            p.is_salary_negotiable AS salaryNegotiable,
+            p.salary_raw_text AS salaryRawText,
+            p.total_hc AS totalHc,
+            p.reserved_hc AS reservedHc,
+            p.confirmed_hc AS confirmedHc,
+            (p.total_hc - p.reserved_hc - p.confirmed_hc) AS availableHc,
+            pf.job_type AS jobType,
+            pf.core_skills AS skillTagsRaw,
+            p.version,
+            p.published_at AS publishedAt,
+            p.updated_at AS updatedAt,
+            p.created_by AS createdBy
+        FROM job_post p
+        LEFT JOIN job_profile pf ON pf.job_id = p.id
+        WHERE p.deleted_at IS NULL AND p.company_id = #{q.companyId}
+        <if test="q.status != null and q.status != ''">
+            AND p.status = #{q.status}
+        </if>
+        ORDER BY p.updated_at DESC, p.id DESC
+    </select>
+
+    <!-- 插入岗位（创建草稿，useGeneratedKeys 回填 id） -->
+    <insert id="insert" parameterType="com.lingxi.job.domain.entity.JobPost"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO job_post (
+            company_id, title, industry_group_code, industry_code, city_code, city_name,
+            min_experience_years, education_requirement, salary_min_amount, salary_max_amount,
+            salary_currency, salary_period, salary_months, is_salary_negotiable, salary_raw_text,
+            total_hc, jd_text, jd_summary, status, version, created_by, updated_by, expires_at,
+            created_at, updated_at
+        ) VALUES (
+            #{companyId}, #{title}, #{industryGroupCode}, #{industryCode}, #{cityCode}, #{cityName},
+            #{minExperienceYears}, #{educationRequirement}, #{salaryMinAmount}, #{salaryMaxAmount},
+            #{salaryCurrency}, #{salaryPeriod}, #{salaryMonths}, #{isSalaryNegotiable}, #{salaryRawText},
+            #{totalHc}, #{jdText}, #{jdSummary}, #{status}, #{version}, #{createdBy}, #{updatedBy}, #{expiresAt},
+            #{createdAt}, #{updatedAt}
+        )
+    </insert>
+
+    <!-- 软删除草稿岗位（仅 DRAFT，乐观锁 version，软删除置 deleted_at） -->
+    <update id="softDelete">
+        UPDATE job_post
+        SET deleted_at = NOW()
+        WHERE id = #{id} AND company_id = #{companyId} AND status = 'DRAFT'
+              AND version = #{version} AND deleted_at IS NULL
+    </update>
+
+    <!-- 发布岗位（DRAFT→PUBLISHED，乐观锁 version） -->
+    <update id="publish" parameterType="com.lingxi.job.domain.entity.JobPost">
+        UPDATE job_post
+        SET status = 'PUBLISHED',
+            published_at = NOW(),
+            version = version + 1
+        WHERE id = #{id} AND company_id = #{companyId} AND version = #{version} AND deleted_at IS NULL
+    </update>
+
+    <!-- 关闭岗位（PUBLISHED/PAUSED→CLOSED，closeReason=MANUAL，乐观锁 version） -->
+    <update id="close" parameterType="com.lingxi.job.domain.entity.JobPost">
+        UPDATE job_post
+        SET status = 'CLOSED',
+            closed_at = NOW(),
+            close_reason = 'MANUAL',
+            version = version + 1
+        WHERE id = #{id} AND company_id = #{companyId} AND version = #{version} AND deleted_at IS NULL
+    </update>
+
+    <!-- 重新开放岗位（CLOSED→PUBLISHED，显式清空 closeReason/closedAt，乐观锁 version） -->
+    <update id="reopen" parameterType="com.lingxi.job.domain.entity.JobPost">
+        UPDATE job_post
+        SET status = 'PUBLISHED',
+            published_at = NOW(),
+            close_reason = NULL,
+            closed_at = NULL,
+            version = version + 1
+        WHERE id = #{id} AND company_id = #{companyId} AND version = #{version} AND deleted_at IS NULL
+    </update>
+
+    <!-- 违规下架岗位（PUBLISHED/PAUSED→CLOSED，closeReason=VIOLATION，乐观锁 version；WHERE 含 status 断言防 Mapper 误用） -->
+    <update id="offline" parameterType="com.lingxi.job.domain.entity.JobPost">
+        UPDATE job_post
+        SET status = 'CLOSED',
+            closed_at = NOW(),
+            close_reason = 'VIOLATION',
+            version = version + 1
+        WHERE id = #{id} AND company_id = #{companyId}
+              AND status IN ('PUBLISHED', 'PAUSED')
+              AND version = #{version} AND deleted_at IS NULL
+    </update>
+
+    <!-- 到期扫描：仅取 id/companyId/status，供定时任务逐条幂等关闭并落审计日志 -->
+    <select id="listExpiredOpen" resultType="com.lingxi.job.domain.entity.JobPost">
+        SELECT id, company_id, status
+        FROM job_post
+        WHERE status IN ('PUBLISHED', 'PAUSED')
+          AND expires_at IS NOT NULL AND expires_at &lt;= NOW()
+          AND deleted_at IS NULL
+    </select>
+
+    <!-- 到期关闭：原子 UPDATE 单个过期岗位（close_reason=EXPIRED，版本号+1）
+         status=#{fromStatus} 断言：状态并发变化时返回 0、审计 fromStatus 与 DB 一致；
+         已 CLOSED（MANUAL/VIOLATION）不命中，不会覆盖 closeReason，天然幂等 -->
+    <update id="closeExpiredById">
+        UPDATE job_post
+        SET status = 'CLOSED',
+            close_reason = 'EXPIRED',
+            closed_at = NOW(),
+            version = version + 1
+        WHERE id = #{id}
+          AND status = #{fromStatus}
+          AND expires_at IS NOT NULL AND expires_at &lt;= NOW()
+          AND deleted_at IS NULL
+    </update>
+
+    <!-- C端最新排序轻量搜索（阶段6.3）：复用全部筛选条件但不计算推荐分，recommendScore 恒 0；PageHelper 分页不写 LIMIT -->
+    <select id="selectLatestForCandidateSearch" resultType="com.lingxi.job.domain.vo.JobCardVO">
+        SELECT
+        <include refid="CandidateSearch_CardColumns"/>,
+            0 AS recommendScore
+        <include refid="CandidateSearch_FromAndFilters"/>
+        ORDER BY p.published_at DESC, p.id DESC
+    </select>
+
+    <!-- C端搜索卡片公共列（轻量与推荐查询共用，防字段漂移） -->
+    <sql id="CandidateSearch_CardColumns">
+        p.id AS jobId, p.title,
+        p.industry_group_code AS industryGroupCode,
+        p.industry_code AS industryCode,
+        p.city_code AS cityCode, p.city_name AS cityName,
+        p.salary_min_amount AS salaryMinAmount,
+        p.salary_max_amount AS salaryMaxAmount,
+        p.salary_currency AS salaryCurrency,
+        p.salary_period AS salaryPeriod,
+        p.salary_months AS salaryMonths,
+        p.is_salary_negotiable AS salaryNegotiable,
+        p.salary_raw_text AS salaryRawText,
+        pf.core_skills AS skillTagsRaw,
+        p.min_experience_years AS minExperienceYears,
+        p.education_requirement AS educationRequirement,
+        p.published_at AS publishedAt,
+        p.company_id AS companyId,
+        p.created_by AS createdBy
+    </sql>
+
+    <!-- C端搜索公共 FROM/WHERE/筛选（轻量与推荐查询共用，防筛选条件漂移；不含 ORDER BY） -->
+    <sql id="CandidateSearch_FromAndFilters">
+        FROM job_post p
+        LEFT JOIN job_profile pf ON pf.job_id = p.id AND pf.company_id = p.company_id
+        WHERE p.deleted_at IS NULL AND p.status = 'PUBLISHED'
+        <!-- 多关键词扩展搜索（OR）：如"前端"→["前端","frontend","react","vue",...] -->
+        <if test="q.keywords != null and q.keywords.size() > 0">
+            AND (
+            <foreach collection="q.keywords" item="kw" separator=" OR ">
+                p.title LIKE CONCAT('%', #{kw}, '%') ESCAPE '='
+            </foreach>
+            )
+        </if>
+        <!-- 单关键词回退 -->
+        <if test="(q.keywords == null or q.keywords.size() == 0) and q.keyword != null and q.keyword != ''">
+            AND (p.title LIKE CONCAT('%', #{q.keyword}, '%') ESCAPE '='
+                 OR p.jd_summary LIKE CONCAT('%', #{q.keyword}, '%') ESCAPE '=')
+        </if>
+        <!-- 行业：一级与具体分开判断，避免只传一级时拼 null 到 industry_code -->
+        <if test="q.industryGroupCode != null and q.industryGroupCode != ''">
+            AND p.industry_group_code = #{q.industryGroupCode}
+        </if>
+        <if test="q.industryCode != null and q.industryCode != ''">
+            AND p.industry_code = #{q.industryCode}
+        </if>
+        <if test="q.cityCode != null and q.cityCode != ''">
+            AND p.city_code = #{q.cityCode}
+        </if>
+        <!-- 薪资区间相交：面议岗位直接命中（外层 OR），或非面议岗位区间与用户区间相交 -->
+        <if test="q.salaryMin != null or q.salaryMax != null">
+            AND (
+                p.is_salary_negotiable = 1
+                OR (
+                    1 = 1
+                    <if test="q.salaryMin != null">AND p.salary_max_amount &gt;= #{q.salaryMin}</if>
+                    <if test="q.salaryMax != null">AND p.salary_min_amount &lt;= #{q.salaryMax}</if>
+                )
+            )
+        </if>
+        <!-- 经验硬过滤：岗位最低经验 ≤ 用户可接受最高经验 -->
+        <if test="q.experienceMax != null">
+            AND p.min_experience_years &lt;= #{q.experienceMax}
+        </if>
+        <!-- 学历硬过滤：岗位学历要求 ∈ 用户可满足集合 -->
+        <if test="q.educationCodes != null and q.educationCodes.size() > 0">
+            AND p.education_requirement IN
+            <foreach collection="q.educationCodes" item="code" open="(" separator="," close=")">
+                #{code}
+            </foreach>
+        </if>
+        <!-- 岗位类型（来自画像） -->
+        <if test="q.jobType != null and q.jobType != ''">
+            AND pf.job_type = #{q.jobType}
+        </if>
+        <!-- 公司名模糊搜索（子查询：先按名字匹配公司 ID，再过滤岗位） -->
+        <if test="q.company != null and q.company != ''">
+            AND p.company_id IN (SELECT id FROM hr_company WHERE name LIKE CONCAT('%', #{q.company}, '%'))
+        </if>
+        <!-- 技能标签：JSON 对象数组按 name 字段匹配，多技能 OR -->
+        <if test="q.skillTags != null and q.skillTags.size() > 0">
+            AND (
+            <foreach collection="q.skillTags" item="skill" separator=" OR ">
+                JSON_CONTAINS(JSON_EXTRACT(pf.core_skills, '$[*].name'), JSON_QUOTE(#{skill}))
+            </foreach>
+            )
+        </if>
+    </sql>
+
+    <!-- C端岗位搜索（仅 PUBLISHED，JOIN job_profile 完整关联键，动态筛选+推荐分+排序，PageHelper 分页不写 LIMIT） -->
+    <select id="selectForCandidateSearch" resultType="com.lingxi.job.domain.vo.JobCardVO">
+        SELECT
+        <include refid="CandidateSearch_CardColumns"/>,
+            (
+                <choose>
+                <!-- 推荐分二选一：画像模式（无筛选+RECOMMENDED，画像六维100分） or 现有条件推荐（五维100分） -->
+                <when test="q.profileMode != null and q.profileMode">
+                    <!-- 期望岗位（25）：title LIKE（desiredJob 已 escapeKeyword 转义）[R4] -->
+                    CASE WHEN #{q.desiredJob} IS NULL OR #{q.desiredJob} = '' THEN 0
+                         WHEN p.title LIKE CONCAT('%', #{q.desiredJob}, '%') ESCAPE '=' THEN 25
+                         ELSE 0 END
+                    +
+                    <!-- 期望薪资（25）：三分支 [R2]，双边包含=25/相交=18；仅min=岗位max≥min→18；仅max=岗位min≤max→18；面议=18 -->
+                    CASE
+                        WHEN #{q.desiredSalaryMin} IS NULL AND #{q.desiredSalaryMax} IS NULL THEN 0
+                        WHEN p.is_salary_negotiable = 1 THEN 18
+                        WHEN #{q.desiredSalaryMin} IS NOT NULL AND #{q.desiredSalaryMax} IS NOT NULL THEN
+                            CASE
+                                WHEN p.salary_min_amount &lt;= #{q.desiredSalaryMin}
+                                 AND p.salary_max_amount &gt;= #{q.desiredSalaryMax} THEN 25
+                                WHEN p.salary_max_amount &gt;= #{q.desiredSalaryMin}
+                                 AND p.salary_min_amount &lt;= #{q.desiredSalaryMax} THEN 18
+                                ELSE 0
+                            END
+                        WHEN #{q.desiredSalaryMin} IS NOT NULL THEN
+                            CASE WHEN p.salary_max_amount &gt;= #{q.desiredSalaryMin} THEN 18 ELSE 0 END
+                        ELSE
+                            CASE WHEN p.salary_min_amount &lt;= #{q.desiredSalaryMax} THEN 18 ELSE 0 END
+                    END
+                    +
+                    <!-- 期望城市（15）：FIND_IN_SET 精确匹配（desiredCities 已规范化）[R3] -->
+                    CASE WHEN #{q.desiredCities} IS NULL OR #{q.desiredCities} = '' THEN 0
+                         WHEN FIND_IN_SET(p.city_name, #{q.desiredCities}) &gt; 0 THEN 15
+                         ELSE 0 END
+                    +
+                    <!-- 工作年限（15）：候选可接受年限上限 ≥ 岗位最低年限 -->
+                    CASE WHEN #{q.userWorkYearsMax} IS NULL THEN 0
+                         WHEN p.min_experience_years &lt;= #{q.userWorkYearsMax} THEN 15
+                         ELSE 0 END
+                    +
+                    <!-- 学历（10）：候选学历等级 ≥ 岗位学历等级（FIELD-1 与 EducationRequirementEnum.level 顺序一致） -->
+                    CASE WHEN #{q.userEducationLevel} IS NULL THEN 0
+                         WHEN #{q.userEducationLevel} &gt;=
+                              (FIELD(p.education_requirement,
+                               'NONE','JUNIOR_HIGH','HIGH_SCHOOL','ASSOCIATE','BACHELOR','MASTER','DOCTOR') - 1)
+                         THEN 10 ELSE 0 END
+                    +
+                    <!-- 新鲜度（10）：3天=10/7天=8/15天=5/30天=3/更早=0 -->
+                    CASE
+                        WHEN p.published_at &gt;= DATE_SUB(NOW(), INTERVAL 3 DAY) THEN 10
+                        WHEN p.published_at &gt;= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 8
+                        WHEN p.published_at &gt;= DATE_SUB(NOW(), INTERVAL 15 DAY) THEN 5
+                        WHEN p.published_at &gt;= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 3
+                        ELSE 0
+                    END
+                </when>
+                <otherwise>
+                <!-- 现有条件推荐分支（原样保留）：skillScore30 + salaryScore25 + experienceScore15 + educationScore10 + freshnessScore20 -->
+                <!-- skillScore：传 skillTags 时命中任一=30/未中=0，未传=0 -->
+                <choose>
+                    <when test="q.skillTags != null and q.skillTags.size() > 0">
+                        CASE WHEN
+                        <foreach collection="q.skillTags" item="skill" separator=" OR ">
+                            JSON_CONTAINS(JSON_EXTRACT(pf.core_skills, '$[*].name'), JSON_QUOTE(#{skill}))
+                        </foreach>
+                        THEN 30 ELSE 0 END
+                    </when>
+                    <otherwise>0</otherwise>
+                </choose>
+                +
+                <!-- salaryScore：面议最高优先=12；岗位区间完全包含用户区间=25（岗位下限≤用户下限 且 岗位上限≥用户上限，见条件推荐设计 §660-662）；双边相交=18；单边相交=18；未传=0 -->
+                <choose>
+                    <when test="q.salaryMin != null or q.salaryMax != null">
+                        CASE
+                        WHEN p.is_salary_negotiable = 1 THEN 12
+                        <choose>
+                            <when test="q.salaryMin != null and q.salaryMax != null">
+                                WHEN p.salary_min_amount &lt;= #{q.salaryMin} AND p.salary_max_amount &gt;= #{q.salaryMax} THEN 25
+                                WHEN p.salary_max_amount &gt;= #{q.salaryMin} AND p.salary_min_amount &lt;= #{q.salaryMax} THEN 18
+                            </when>
+                            <when test="q.salaryMin != null">
+                                WHEN p.salary_max_amount &gt;= #{q.salaryMin} THEN 18
+                            </when>
+                            <otherwise>
+                                WHEN p.salary_min_amount &lt;= #{q.salaryMax} THEN 18
+                            </otherwise>
+                        </choose>
+                        ELSE 0 END
+                    </when>
+                    <otherwise>0</otherwise>
+                </choose>
+                +
+                <!-- experienceScore：expMax-minExp ≤0=15/1=12/2=9/3=6/≥4=3；未传=0 -->
+                <choose>
+                    <when test="q.experienceMax != null">
+                        CASE
+                        WHEN #{q.experienceMax} - p.min_experience_years &lt;= 0 THEN 15
+                        WHEN #{q.experienceMax} - p.min_experience_years = 1 THEN 12
+                        WHEN #{q.experienceMax} - p.min_experience_years = 2 THEN 9
+                        WHEN #{q.experienceMax} - p.min_experience_years = 3 THEN 6
+                        ELSE 3 END
+                    </when>
+                    <otherwise>0</otherwise>
+                </choose>
+                +
+                <!-- educationScore：|userLevel-jobLevel| 0=10/1=8/2=6/≥3=4；未传=0 -->
+                <!-- ⚠️ 维护约束：FIELD(编码,'NONE'..'DOCTOR')-1 的编码顺序必须与 EducationRequirementEnum 枚举的 level 字段顺序一致（NONE=0~DOCTOR=6）；
+                     新增/调整学历档位时需同步修改此 FIELD 列表，并补一致性测试，防止编码→等级映射与枚举漂移。 -->
+                <!-- jobLevel 由 FIELD 将 education_requirement 编码映射 0~6；education_requirement NOT NULL DEFAULT 'NONE'，NULL 不可达 -->
+
+                <choose>
+                    <when test="q.userEducationLevel != null">
+                        CASE
+                        WHEN ABS(#{q.userEducationLevel}
+                            - (FIELD(p.education_requirement, 'NONE','JUNIOR_HIGH','HIGH_SCHOOL','ASSOCIATE','BACHELOR','MASTER','DOCTOR') - 1)) = 0 THEN 10
+                        WHEN ABS(#{q.userEducationLevel}
+                            - (FIELD(p.education_requirement, 'NONE','JUNIOR_HIGH','HIGH_SCHOOL','ASSOCIATE','BACHELOR','MASTER','DOCTOR') - 1)) = 1 THEN 8
+                        WHEN ABS(#{q.userEducationLevel}
+                            - (FIELD(p.education_requirement, 'NONE','JUNIOR_HIGH','HIGH_SCHOOL','ASSOCIATE','BACHELOR','MASTER','DOCTOR') - 1)) = 2 THEN 6
+                        ELSE 4 END
+                    </when>
+                    <otherwise>0</otherwise>
+                </choose>
+                +
+                <!-- freshnessScore：3天=20/7天=15/15天=10/30天=5/更早或null=0 -->
+                CASE
+                    WHEN p.published_at &gt;= DATE_SUB(NOW(), INTERVAL 3 DAY) THEN 20
+                    WHEN p.published_at &gt;= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 15
+                    WHEN p.published_at &gt;= DATE_SUB(NOW(), INTERVAL 15 DAY) THEN 10
+                    WHEN p.published_at &gt;= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 5
+                    ELSE 0
+                END
+                </otherwise>
+                </choose>
+            ) AS recommendScore
+        <include refid="CandidateSearch_FromAndFilters"/>
+        <!-- 排序：SortByEnum 枚举白名单固定拼接，禁止前端字符串直接入 SQL -->
+        <choose>
+            <when test="'LATEST'.equals(q.sortBy)">
+                ORDER BY p.published_at DESC, p.id DESC
+            </when>
+            <when test="'SALARY_DESC'.equals(q.sortBy)">
+                ORDER BY p.is_salary_negotiable ASC, p.salary_max_amount DESC, p.published_at DESC, p.id DESC
+            </when>
+            <otherwise>
+                ORDER BY recommendScore DESC, p.published_at DESC, p.id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 按ID查询已发布岗位（C端详情，仅 PUBLISHED 且未删除） -->
+    <select id="selectPublishedById" resultType="com.lingxi.job.domain.entity.JobPost">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM job_post
+        WHERE id = #{id} AND status = 'PUBLISHED' AND deleted_at IS NULL
+    </select>
+
+    <!-- 按ID+企业ID乐观锁更新岗位基础信息（PUT 全量更新） -->
+    <update id="updateByIdAndVersion" parameterType="com.lingxi.job.domain.entity.JobPost">
+        UPDATE job_post
+        SET title = #{title},
+            industry_group_code = #{industryGroupCode},
+            industry_code = #{industryCode},
+            city_code = #{cityCode},
+            city_name = #{cityName},
+            min_experience_years = #{minExperienceYears},
+            education_requirement = #{educationRequirement},
+            salary_min_amount = #{salaryMinAmount},
+            salary_max_amount = #{salaryMaxAmount},
+            salary_currency = #{salaryCurrency},
+            salary_period = #{salaryPeriod},
+            salary_months = #{salaryMonths},
+            is_salary_negotiable = #{isSalaryNegotiable},
+            salary_raw_text = #{salaryRawText},
+            total_hc = #{totalHc},
+            jd_text = #{jdText},
+            jd_summary = #{jdSummary},
+            expires_at = #{expiresAt},
+            updated_by = #{updatedBy},
+            version = version + 1
+        WHERE id = #{id} AND company_id = #{companyId} AND version = #{version} AND deleted_at IS NULL
+    </update>
+
+    <!--
+        C端城市选项：仅返回存在"已发布且未删除岗位"的启用城市，名称取字典 job_city_dict（城市名称唯一真值，不信任 job_post.city_name）
+        仅 JOIN 字典启用城市（cd.status = 1），停用城市即使有已发布岗位也不出现在筛选项中
+    -->
+    <select id="selectCityOptions" resultType="com.lingxi.job.domain.dto.response.JobOptionsResponse$CityOption">
+        SELECT DISTINCT p.city_code AS code, cd.name AS name
+        FROM job_post p
+        JOIN job_city_dict cd ON cd.code = p.city_code
+        WHERE p.status = 'PUBLISHED' AND p.deleted_at IS NULL AND cd.status = 1
+        ORDER BY p.city_code ASC
+    </select>
+
+    <!--
+        已发布岗位画像核心技能去重列表（C端搜索选项，数据驱动，避免前端硬编码）
+        JSON_TABLE 展开 core_skills 数组提取 name；DISTINCT+ORDER BY 去重排序；LIMIT 控制返回数量
+        防护：pf.core_skills IS NOT NULL 过滤 null JSON；t.name 去空（null/空白）
+    -->
+    <select id="selectSkillOptions" resultType="string">
+        SELECT DISTINCT t.name AS skill
+        FROM job_post p
+        JOIN job_profile pf ON pf.job_id = p.id
+        JOIN JSON_TABLE(pf.core_skills, '$[*]' COLUMNS (name VARCHAR(64) PATH '$.name')) t
+        WHERE p.status = 'PUBLISHED' AND p.deleted_at IS NULL
+          AND pf.core_skills IS NOT NULL
+          AND t.name IS NOT NULL AND TRIM(t.name) &lt;&gt; ''
+        ORDER BY t.name COLLATE utf8mb4_unicode_ci ASC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.resume.mapper.ResumeApplicationMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="ResumeApplication">
+        <id column="id" property="id"/>
+        <result column="job_id" property="jobId"/>
+        <result column="candidate_id" property="candidateId"/>
+        <result column="resume_id" property="resumeId"/>
+        <result column="status" property="status"/>
+        <result column="match_score" property="matchScore"/>
+        <result column="ai_score" property="aiScore"/>
+        <result column="ai_analysis" property="aiAnalysis"/>
+        <result column="reject_feedback" property="rejectFeedback"/>
+        <result column="submitted_at" property="submittedAt"/>
+        <result column="viewed_at" property="viewedAt"/>
+        <result column="screened_at" property="screenedAt"/>
+        <result column="interviewing_at" property="interviewingAt"/>
+        <result column="offerable_at" property="offerableAt"/>
+        <result column="offered_at" property="offeredAt"/>
+        <result column="rejected_at" property="rejectedAt"/>
+        <result column="withdrawn_at" property="withdrawnAt"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        ra.id, ra.job_id, ra.candidate_id, ra.resume_id, ra.status, ra.match_score,
+        ra.ai_score, ra.ai_analysis, ra.reject_feedback,
+        ra.submitted_at, ra.viewed_at, ra.screened_at, ra.interviewing_at, ra.offerable_at,
+        ra.offered_at, ra.rejected_at, ra.withdrawn_at, ra.created_at, ra.updated_at
+    </sql>
+
+    <!-- 含 JOIN 冗余字段的结果映射（跨表查询用，ra. 前缀列 + job/hr 字段） -->
+    <resultMap id="ApplicationWithJobResultMap" type="ResumeApplication" extends="BaseResultMap">
+        <result column="job_title" property="jobTitle"/>
+        <result column="city_name" property="cityName"/>
+        <result column="company_id" property="companyId"/>
+        <result column="company_name" property="companyName"/>
+        <result column="company_logo" property="companyLogo"/>
+        <result column="candidate_name" property="candidateName"/>
+    </resultMap>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume_application ra
+        WHERE ra.id = #{id}
+    </select>
+
+    <!-- 根据候选人ID查询列表 -->
+    <select id="selectByCandidateId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume_application ra
+        WHERE ra.candidate_id = #{candidateId}
+        ORDER BY ra.submitted_at DESC
+    </select>
+
+    <!-- C端投递列表条件查询（JOIN job_post/hr_company，candidateId 必传） -->
+    <select id="selectByCondition" resultMap="ApplicationWithJobResultMap">
+        SELECT <include refid="Base_Column_List"/>,
+               jp.title AS job_title, jp.city_name, jp.company_id,
+               hc.name AS company_name, hc.logo_url AS company_logo
+        FROM resume_application ra
+        LEFT JOIN job_post jp ON ra.job_id = jp.id
+        LEFT JOIN hr_company hc ON jp.company_id = hc.id
+        WHERE ra.candidate_id = #{candidateId}
+        ORDER BY ra.submitted_at DESC
+    </select>
+
+    <!-- HR端候选人列表条件查询（JOIN job_post/sys_user，companyId 必传） -->
+    <select id="selectByCompanyId" resultMap="ApplicationWithJobResultMap">
+        SELECT <include refid="Base_Column_List"/>,
+               jp.title AS job_title, jp.city_name, jp.company_id,
+               hc.name AS company_name, hc.logo_url AS company_logo,
+               su.name AS candidate_name
+        FROM resume_application ra
+        INNER JOIN job_post jp ON ra.job_id = jp.id
+        LEFT JOIN hr_company hc ON jp.company_id = hc.id
+        LEFT JOIN sys_user su ON ra.candidate_id = su.id
+        WHERE jp.company_id = #{companyId}
+        <if test="applicationIds != null and applicationIds.size() > 0">
+            AND ra.id IN
+            <foreach collection="applicationIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="status != null and status != ''">AND ra.status = #{status}</if>
+        <if test="jobId != null">AND ra.job_id = #{jobId}</if>
+        <if test="minMatchScore != null">AND ra.match_score &gt;= #{minMatchScore}</if>
+        <if test="keyword != null and keyword != ''">
+            AND su.name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <choose>
+            <when test="sortBy == 'submittedAt'">
+                ORDER BY ra.submitted_at DESC
+            </when>
+            <otherwise>
+                ORDER BY ra.match_score DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 根据ID查询投递详情（JOIN job_post/hr_company 获取岗位与企业信息） -->
+    <select id="selectByIdWithJob" resultMap="ApplicationWithJobResultMap">
+        SELECT <include refid="Base_Column_List"/>,
+               jp.title AS job_title, jp.city_name, jp.company_id,
+               hc.name AS company_name, hc.logo_url AS company_logo
+        FROM resume_application ra
+        LEFT JOIN job_post jp ON ra.job_id = jp.id
+        LEFT JOIN hr_company hc ON jp.company_id = hc.id
+        WHERE ra.id = #{id}
+    </select>
+
+    <!-- 查询岗位+候选人的投递记录 -->
+    <select id="selectByJobAndCandidate" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM resume_application ra
+        WHERE ra.job_id = #{jobId} AND ra.candidate_id = #{candidateId}
+        LIMIT 1
+    </select>
+
+    <!-- 校验岗位可投递性（单库直查 job_post 表） -->
+    <select id="countOpenJob" resultType="int">
+        SELECT COUNT(*)
+        FROM job_post
+        WHERE id = #{jobId}
+          AND deleted_at IS NULL
+          AND status = 'PUBLISHED'
+    </select>
+
+    <!-- 重新投递：将终态记录重置为 SUBMITTED，清空所有状态时间戳，更新匹配度 -->
+    <update id="reapply">
+        UPDATE resume_application
+        SET status = 'SUBMITTED',
+            resume_id = #{resumeId},
+            match_score = #{matchScore},
+            submitted_at = NOW(),
+            viewed_at = NULL,
+            screened_at = NULL,
+            interviewing_at = NULL,
+            offerable_at = NULL,
+            offered_at = NULL,
+            rejected_at = NULL,
+            withdrawn_at = NULL,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 插入记录（显式写入雪花ID，与踩坑记录一致：不用 useGeneratedKeys） -->
+    <insert id="insert">
+        INSERT INTO resume_application (
+            id, job_id, candidate_id, resume_id, status, match_score
+        ) VALUES (
+            #{id}, #{jobId}, #{candidateId}, #{resumeId}, #{status}, #{matchScore}
+        )
+    </insert>
+
+    <!-- 条件更新状态（状态机核心，天然幂等） -->
+    <!-- target 为状态时间戳列名白名单，必须由 Service 层映射传入，禁止前端直传；
+         部分状态（如 OFFER_ACCEPTED/OFFER_DECLINED）无独立时间戳列，target 为空时仅更新状态与时间 -->
+    <update id="updateStatus">
+        UPDATE resume_application
+        <set>
+            status = #{toStatus},
+            <if test="target != null and target != ''">
+                ${target} = NOW(),
+            </if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id} AND status = #{fromStatus}
+    </update>
+
+    <!-- 动态更新（仅非空字段） -->
+    <update id="updateById">
+        UPDATE resume_application
+        <set>
+            <if test="resumeId != null">resume_id = #{resumeId},</if>
+            <if test="matchScore != null">match_score = #{matchScore},</if>
+            <if test="aiScore != null">ai_score = #{aiScore},</if>
+            <if test="aiAnalysis != null">ai_analysis = #{aiAnalysis},</if>
+            <if test="rejectFeedback != null">reject_feedback = #{rejectFeedback},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 统计平台投递总数（管理后台看板） -->
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*)
+        FROM resume_application
+    </select>
+
+    <!-- 统计近 N 天每日投递数（管理后台趋势图，按日升序） -->
+    <select id="countByDay" resultType="map">
+        SELECT DATE(ra.submitted_at) AS dt, COUNT(*) AS cnt
+        FROM resume_application ra
+        WHERE ra.submitted_at &gt;= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
+        GROUP BY DATE(ra.submitted_at)
+        ORDER BY dt ASC
+    </select>
+
+    <!-- 查询用户已投递的岗位ID列表 -->
+    <select id="selectAppliedJobIds" resultType="java.lang.Long">
+        SELECT DISTINCT job_id
+        FROM resume_application
+        WHERE candidate_id = #{candidateId}
+          AND status != 'WITHDRAWN'
+    </select>
+
+</mapper>

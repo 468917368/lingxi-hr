@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.job.mapper.JobStatusLogMapper">
+
+    <!-- 插入岗位状态变更日志（created_at 用 NOW()，与 job_post 写侧同时钟；
+         reason_detail=补充说明（违规下架 remark 等），request_id 本阶段统一 null） -->
+    <insert id="insert" parameterType="com.lingxi.job.domain.entity.JobStatusLog">
+        INSERT INTO job_status_log (company_id, job_id, from_status, to_status, reason, reason_detail,
+                                    operator_id, operator_role, request_id, created_at)
+        VALUES (#{companyId}, #{jobId}, #{fromStatus}, #{toStatus}, #{reason}, #{reasonDetail},
+                #{operatorId}, #{operatorRole}, #{requestId}, NOW())
+    </insert>
+
+    <!-- 按企业+岗位查询状态历史（显式列字段；company_id+job_id 等值命中 idx_job_id 最左前缀，
+         created_at DESC 索引内排序免 filesort；查询层企业隔离） -->
+    <select id="selectByJobIdAndCompanyId" resultType="com.lingxi.job.domain.entity.JobStatusLog">
+        SELECT id, company_id, job_id, from_status, to_status, reason, reason_detail,
+               operator_id, operator_role, request_id, created_at, updated_at
+        FROM job_status_log
+        WHERE company_id = #{companyId} AND job_id = #{jobId}
+        ORDER BY created_at DESC, id DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,16 @@
+# 测试环境配置（Surefire 统一 spring.profiles.active=test 时加载）
+# 固定 Mock 百宝箱客户端/UserIdProvider：自动化测试不触网、不依赖真实密钥；
+# Real 联调见 application-dev.yml（mock=false，密钥经 ${BAIBAOXIANG_*} 注入）
+spring:
+  cloud:
+    bootstrap:
+      enabled: false
+
+ai:
+  agent:
+    mock: true
+
+# 测试环境禁用岗位到期关闭定时任务（防全量测试恰逢整点误处理测试数据）
+job:
+  expire-close:
+    cron: "-"

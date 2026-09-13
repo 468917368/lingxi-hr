@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.user.mapper.SysAgentConversationMapper">
+
+    <resultMap id="BaseResultMap" type="SysAgentConversation">
+        <id column="id" property="id"/>
+        <result column="session_id" property="sessionId"/>
+        <result column="user_id" property="userId"/>
+        <result column="role" property="role"/>
+        <result column="content" property="content"/>
+        <result column="tool_calls" property="toolCalls"/>
+        <result column="tokens_used" property="tokensUsed"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, session_id, user_id, role, content, tool_calls, tokens_used, created_at
+    </sql>
+
+    <!-- 插入对话记录 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_agent_conversation (session_id, user_id, role, content, tool_calls, tokens_used, created_at)
+        VALUES (#{sessionId}, #{userId}, #{role}, #{content}, #{toolCalls}, #{tokensUsed}, NOW())
+    </insert>
+
+    <!-- 根据会话ID查询对话历史 -->
+    <select id="selectBySessionId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM sys_agent_conversation
+        WHERE session_id = #{sessionId}
+        ORDER BY created_at ASC
+    </select>
+
+    <!-- 查询用户的会话列表（取用户发的最后一条消息，按时间倒序） -->
+    <select id="selectUserSessions" resultMap="BaseResultMap">
+        SELECT t1.*
+        FROM sys_agent_conversation t1
+        INNER JOIN (
+            SELECT session_id, MAX(id) AS max_id
+            FROM sys_agent_conversation
+            WHERE user_id = #{userId} AND role = 'user'
+            GROUP BY session_id
+        ) t2 ON t1.id = t2.max_id
+        ORDER BY t1.created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计用户的会话总数（只统计有用户消息的会话，与selectUserSessions保持一致） -->
+    <select id="countUserSessions" resultType="long">
+        SELECT COUNT(DISTINCT session_id)
+        FROM sys_agent_conversation
+        WHERE user_id = #{userId} AND role = 'user'
+    </select>
+
+    <!-- 查询会话的最后一条消息 -->
+    <select id="selectLastMessage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM sys_agent_conversation
+        WHERE session_id = #{sessionId}
+        ORDER BY created_at DESC
+        LIMIT 1
+    </select>
+
+    <!-- 统计会话的消息数量 -->
+    <select id="countBySessionId" resultType="long">
+        SELECT COUNT(*)
+        FROM sys_agent_conversation
+        WHERE session_id = #{sessionId}
+    </select>
+
+    <!-- 统计会话的Token消耗 -->
+    <select id="sumTokensBySessionId" resultType="long">
+        SELECT COALESCE(SUM(tokens_used), 0)
+        FROM sys_agent_conversation
+        WHERE session_id = #{sessionId}
+    </select>
+
+    <!-- 删除会话的所有消息 -->
+    <delete id="deleteBySessionId">
+        DELETE FROM sys_agent_conversation
+        WHERE session_id = #{sessionId}
+    </delete>
+
+    <!-- 查询会话的所有者用户ID（轻量查询） -->
+    <select id="selectUserIdBySessionId" resultType="java.lang.Long">
+        SELECT user_id
+        FROM sys_agent_conversation
+        WHERE session_id = #{sessionId}
+        LIMIT 1
+    </select>
+
+</mapper>

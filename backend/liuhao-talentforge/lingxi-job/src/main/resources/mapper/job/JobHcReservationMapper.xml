@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.job.mapper.JobHcReservationMapper">
+
+    <sql id="Base_Column_List">
+        id, company_id, job_id, offer_id, candidate_id, status, reserved_at, confirmed_at,
+        released_at, release_reason, version, created_at, updated_at
+    </sql>
+
+    <!-- 按企业+Offer查询流水（幂等校验用） -->
+    <select id="selectByCompanyAndOffer" resultType="com.lingxi.job.domain.entity.JobHcReservation">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM job_hc_reservation
+        WHERE company_id = #{companyId} AND offer_id = #{offerId}
+    </select>
+
+    <!-- 按企业+Offer查询流水并加锁（reserve 幂等校验，仅 company+offer） -->
+    <select id="selectByCompanyAndOfferForUpdate" resultType="com.lingxi.job.domain.entity.JobHcReservation">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM job_hc_reservation
+        WHERE company_id = #{companyId} AND offer_id = #{offerId}
+        FOR UPDATE
+    </select>
+
+    <!-- 按企业+岗位+Offer查询流水并加锁（confirm/release 防操作错岗位） -->
+    <select id="selectByCompanyJobOfferForUpdate" resultType="com.lingxi.job.domain.entity.JobHcReservation">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM job_hc_reservation
+        WHERE company_id = #{companyId} AND job_id = #{jobId} AND offer_id = #{offerId}
+        FOR UPDATE
+    </select>
+
+    <!-- 新增流水 -->
+    <insert id="insert" parameterType="com.lingxi.job.domain.entity.JobHcReservation" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO job_hc_reservation
+            (company_id, job_id, offer_id, candidate_id, status, reserved_at, version)
+        VALUES
+            (#{companyId}, #{jobId}, #{offerId}, #{candidateId}, #{status}, NOW(), #{version})
+    </insert>
+
+    <!-- 更新流水状态（乐观锁 version） -->
+    <update id="updateStatus" parameterType="com.lingxi.job.domain.entity.JobHcReservation">
+        UPDATE job_hc_reservation
+        SET status = #{status},
+            confirmed_at = #{confirmedAt},
+            released_at = #{releasedAt},
+            release_reason = #{releaseReason},
+            version = version + 1,
+            updated_at = NOW()
+        WHERE id = #{id} AND version = #{version}
+    </update>
+
+</mapper>

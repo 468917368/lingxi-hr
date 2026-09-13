@@ -1,0 +1,129 @@
+server:
+  port: 8086
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain
+    min-response-size: 1024
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  web:
+    resources:
+      static-locations: file:./uploads/
+      add-mappings: true
+  datasource:
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:lingxi}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: ${DB_USER:root}
+    password: ${DB_PASS:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+      connection-timeout: 2000
+      idle-timeout: 300000
+      max-lifetime: 900000
+  redis:
+    host: ${REDIS_HOST:127.0.0.1}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASS:123456}
+  mail:
+    host: ${MAIL_HOST:smtp.qq.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:your-email@qq.com}
+    password: ${MAIL_PASSWORD:your-email-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.lingxi.user.domain.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+  sentinel:
+    enabled: true
+
+# RocketMQ
+rocketmq:
+  name-server: ${ROCKETMQ_NAMESRV:127.0.0.1:9876}
+  producer:
+    group: user-producer-group
+
+# JWT配置
+jwt:
+  secret: ${JWT_SECRET:lingxi-backend-jwt-secret-key-2026-minimum-256-bits}
+  access-token-expire: ${JWT_ACCESS_EXPIRE:7200}
+  refresh-token-expire: ${JWT_REFRESH_EXPIRE:604800}
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.lingxi: DEBUG
+    com.lingxi.user: DEBUG
+    com.lingxi.common: DEBUG
+    com.lingxi.common.interceptor: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: ./logs/lingxi-user.log
+
+# 存储配置
+storage:
+  type: aliyun-oss
+  aliyun-oss:
+    endpoint: ${OSS_ENDPOINT:oss-cn-hangzhou.aliyuncs.com}
+    access-key-id: ${OSS_ACCESS_KEY_ID:your-access-key-id}
+    access-key-secret: ${OSS_ACCESS_KEY_SECRET:your-access-key-secret}
+    bucket-name: ${OSS_BUCKET:lingxi-files}
+
+# 百宝箱配置
+baibaoxiang:
+  api:
+    key: ${BAIBAOXIANG_KEY:your-baibaoxiang-api-key}
+  agent:
+    app-id: ${BAIBAOXIANG_APP_ID:your-baibaoxiang-app-id}
+  analysis:
+    app-id: ${BAIBAOXIANG_ANALYSIS_APP_ID:your-baibaoxiang-analysis-app-id}
+
+# Job Agent 配置
+job-agent:
+  mock: false  # 调百宝箱大模型
+  llm:
+    timeout-ms: 60000
+
+# 阿里云短信配置
+aliyun:
+  sms:
+    mock: ${SMS_MOCK:true}                                     # true=模拟短信+验证码返回前端，false=真实发送
+    sign-name: ${SMS_SIGN_NAME:速通互联验证码}
+    template-code: ${SMS_TEMPLATE_CODE:100001}
+    access-key-id: ${SMS_ACCESS_KEY_ID:your-sms-access-key-id}
+    access-key-secret: ${SMS_ACCESS_KEY_SECRET:your-sms-access-key-secret}
+    endpoint: dysmsapi.aliyuncs.com
+
+# Sentinel日志目录
+sentinel:
+  log:
+    dir: ./logs/csp

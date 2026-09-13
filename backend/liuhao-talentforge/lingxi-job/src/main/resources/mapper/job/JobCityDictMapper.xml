@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.job.mapper.JobCityDictMapper">
+
+    <!-- 全部启用城市（status=1，供 HR/C 端选项下拉） -->
+    <select id="selectEnabledAll" resultType="com.lingxi.job.domain.entity.JobCityDict">
+        SELECT id, code, name, status, created_at, updated_at
+        FROM job_city_dict
+        WHERE status = 1
+        ORDER BY code ASC
+    </select>
+
+    <!-- 按编码查询（含停用，供创建/更新校验与回填区分） -->
+    <select id="selectByCode" resultType="com.lingxi.job.domain.entity.JobCityDict">
+        SELECT id, code, name, status, created_at, updated_at
+        FROM job_city_dict
+        WHERE code = #{code}
+    </select>
+
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.admin.mapper.AnnouncementMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="Announcement">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="target_role" property="targetRole"/>
+        <result column="status" property="status"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        id, title, content, target_role, status, created_by, created_at, updated_at
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM admin_announcement
+        WHERE id = #{id}
+    </select>
+
+    <!-- 查询公告列表 -->
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM admin_announcement
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 插入公告 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO admin_announcement (title, content, target_role, status, created_by)
+        VALUES (#{title}, #{content}, #{targetRole}, #{status}, #{createdBy})
+    </insert>
+
+    <!-- 更新公告 -->
+    <update id="updateById">
+        UPDATE admin_announcement
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="targetRole != null">target_role = #{targetRole},</if>
+            <if test="status != null">status = #{status},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新公告状态 -->
+    <update id="updateStatus">
+        UPDATE admin_announcement
+        <set>
+            status = #{status},
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 统计已发布公告数量 -->
+    <select id="countPublished" resultType="int">
+        SELECT COUNT(*)
+        FROM admin_announcement
+        WHERE status = 'PUBLISHED'
+    </select>
+
+</mapper>

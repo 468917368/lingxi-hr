@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.chat.mapper.MsgConversationMapper">
+
+    <resultMap id="BaseResultMap" type="MsgConversation">
+        <id column="id" property="id"/>
+        <result column="company_id" property="companyId"/>
+        <result column="candidate_id" property="candidateId"/>
+        <result column="hr_id" property="hrId"/>
+        <result column="application_id" property="applicationId"/>
+        <result column="last_message_preview" property="lastMessagePreview"/>
+        <result column="last_message_at" property="lastMessageAt"/>
+        <result column="candidate_unread" property="candidateUnread"/>
+        <result column="hr_unread" property="hrUnread"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, company_id, candidate_id, hr_id, application_id, last_message_preview, last_message_at, candidate_unread, hr_unread, created_at, updated_at
+    </sql>
+
+    <!-- 插入会话 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO msg_conversation (company_id, candidate_id, hr_id, application_id)
+        VALUES (#{companyId}, #{candidateId}, #{hrId}, #{applicationId})
+    </insert>
+
+    <!-- 根据ID查询会话 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM msg_conversation
+        WHERE id = #{id}
+    </select>
+
+    <!-- 查询用户参与的会话列表（作为求职者或HR） -->
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM msg_conversation
+        WHERE candidate_id = #{userId} OR hr_id = #{userId}
+        ORDER BY last_message_at DESC
+    </select>
+
+    <!-- 根据业务条件查询会话 -->
+    <select id="selectByBusiness" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM msg_conversation
+        WHERE company_id = #{companyId}
+          AND candidate_id = #{candidateId}
+          AND hr_id = #{hrId}
+        LIMIT 1
+    </select>
+
+    <!-- 更新会话最后消息信息 -->
+    <update id="updateLastMsg">
+        UPDATE msg_conversation
+        SET last_message_preview = #{lastMessagePreview},
+            last_message_at = NOW(),
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新求职者未读数 -->
+    <update id="incrementCandidateUnread">
+        UPDATE msg_conversation
+        SET candidate_unread = candidate_unread + 1,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新HR未读数 -->
+    <update id="incrementHrUnread">
+        UPDATE msg_conversation
+        SET hr_unread = hr_unread + 1,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新最后消息并增加求职者未读数（合并操作） -->
+    <update id="updateLastMsgAndIncrementCandidateUnread">
+        UPDATE msg_conversation
+        SET last_message_preview = #{lastMessagePreview},
+            last_message_at = NOW(),
+            candidate_unread = candidate_unread + 1,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新最后消息并增加HR未读数（合并操作） -->
+    <update id="updateLastMsgAndIncrementHrUnread">
+        UPDATE msg_conversation
+        SET last_message_preview = #{lastMessagePreview},
+            last_message_at = NOW(),
+            hr_unread = hr_unread + 1,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 清零求职者未读数 -->
+    <update id="clearCandidateUnread">
+        UPDATE msg_conversation
+        SET candidate_unread = 0,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 清零HR未读数 -->
+    <update id="clearHrUnread">
+        UPDATE msg_conversation
+        SET hr_unread = 0,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 统计用户未读消息总数（SQL求和） -->
+    <select id="sumUnreadByUserId" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(
+            CASE
+                WHEN candidate_id = #{userId} THEN candidate_unread
+                WHEN hr_id = #{userId} THEN hr_unread
+                ELSE 0
+            END
+        ), 0)
+        FROM msg_conversation
+        WHERE candidate_id = #{userId} OR hr_id = #{userId}
+    </select>
+
+    <!-- 清零用户未读数（自动判断角色） -->
+    <update id="clearUnreadByUserId">
+        UPDATE msg_conversation
+        SET candidate_unread = IF(candidate_id = #{userId}, 0, candidate_unread),
+            hr_unread = IF(hr_id = #{userId}, 0, hr_unread),
+            updated_at = NOW()
+        WHERE id = #{conversationId}
+    </update>
+
+</mapper>
