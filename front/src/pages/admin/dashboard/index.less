@@ -1,0 +1,219 @@
+.dashboard {
+  padding: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-family: var(--font-title);
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.chartGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s var(--ease-out);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+    opacity: 0;
+    transition: opacity 0.35s var(--ease-out);
+  }
+
+  &:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+
+    &::before { opacity: 1; }
+  }
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-title);
+  margin-bottom: 20px;
+  letter-spacing: -0.3px;
+}
+
+.barChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 180px;
+  padding: 0 4px;
+}
+
+.barItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.barValue {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.bar {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  min-height: 4px;
+  transition: all 0.4s var(--ease-bounce);
+}
+
+.barLabel {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  font-family: var(--font-title);
+}
+
+.hBarChart {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hBarItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hBarLabel {
+  width: 80px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: right;
+  font-family: var(--font-title);
+}
+
+.hBarTrack {
+  flex: 1;
+  height: 28px;
+  background: var(--bg);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.hBarFill {
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.8s var(--ease-bounce);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+}
+
+.hBarVal {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--white);
+  font-family: var(--font-mono);
+}
+
+.rankTable {
+  width: 100%;
+
+  :global {
+    .ant-table-thead > tr > th {
+      background: var(--bg);
+      font-family: var(--font-title);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+    }
+
+    .ant-table-tbody > tr > td {
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      font-size: 14px;
+    }
+
+    .ant-table-tbody > tr:hover > td {
+      background: var(--accent-soft);
+    }
+  }
+}
+
+.rankBadge {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+}
+
+.rankGold {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.rankSilver {
+  background: #F1F5F9;
+  color: #64748B;
+}
+
+.rankBronze {
+  background: #FEF2F2;
+  color: #DC2626;
+}
+
+.rankDefault {
+  background: var(--bg);
+  color: var(--text-tertiary);
+}

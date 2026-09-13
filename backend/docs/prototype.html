@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>灵犀互聘 - 原型演示</title>
+<style>
+/* ===== Design Tokens - Vibrant Color-Block ===== */
+:root {
+  --font-title: "Outfit", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", "PingFang SC", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", Consolas, monospace;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --text: #1E1B1B;
+  --text-secondary: #5C5856;
+  --text-tertiary: #999590;
+  --white: #FFFFFF;
+  --bg: #F8F7F5;
+  --border: #E8E5E0;
+  --shadow-card: 0 2px 16px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.03);
+  --shadow-card-hover: 0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===== Module Accent Colors ===== */
+.c-mode {
+  --accent: #FF6B6B;
+  --accent-2: #FF8E72;
+  --accent-3: #FFA07A;
+  --accent-soft: #FFF0EE;
+  --accent-shadow: rgba(255,107,107,0.22);
+  --bg-gradient-1: #FFF5F3;
+  --bg-gradient-2: #FFF0EE;
+}
+.b-mode {
+  --accent: #4ECDC4;
+  --accent-2: #44B5AB;
+  --accent-3: #6EE7DE;
+  --accent-soft: #EDFCFA;
+  --accent-shadow: rgba(78,205,196,0.22);
+  --bg-gradient-1: #F5FCFB;
+  --bg-gradient-2: #EDFCFA;
+}
+.b-mode.interviewer-role {
+  --accent: #45B7D1;
+  --accent-2: #3AA0B8;
+  --accent-3: #7DD3E8;
+  --accent-soft: #EDF7FA;
+  --accent-shadow: rgba(69,183,209,0.22);
+  --bg-gradient-1: #F5FAFC;
+  --bg-gradient-2: #EDF7FA;
+}
+.a-mode {
+  --accent: #A855F7;
+  --accent-2: #9333EA;
+  --accent-3: #C084FC;
+  --accent-soft: #F5F0FF;
+  --accent-shadow: rgba(168,85,247,0.22);
+  --bg-gradient-1: #FDFAFF;
+  --bg-gradient-2: #F5F0FF;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body {
+  font-family: var(--font-body); background: var(--bg); color: var(--text);
+  line-height: 1.6; min-height: 100dvh; overflow-x: hidden;
+}
+
+/* ===== Animated Gradient Background ===== */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 40%, var(--bg) 70%);
+  transition: background 0.8s var(--ease-out);
+}
+/* Subtle dot grid overlay */
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.25;
+  background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+img { display: block; max-width: 100%; }
+button { cursor: pointer; font-family: inherit; border: none; background: none; font-size: inherit; color: inherit; }
+input, select, textarea { font-family: inherit; font-size: inherit; }
+
+/* ===== Top Bar ===== */
+.topbar {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  z-index: 200; width: calc(100% - 48px); max-width: 1280px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 8px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s var(--ease-out);
+}
+.topbar.scrolled { box-shadow: var(--shadow-card-hover); }
+
+.topbar-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 17px; font-weight: 700; letter-spacing: -0.3px;
+  color: var(--text); padding: 0 8px; font-family: var(--font-title);
+}
+.topbar-brand-mark {
+  width: 32px; height: 32px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0;
+  font-family: var(--font-title);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+}
+
+/* ===== End Switcher ===== */
+.end-switcher {
+  display: flex; gap: 4px; background: var(--bg);
+  border-radius: 12px; padding: 3px; align-items: center;
+}
+.end-switcher .end-divider { width: 1px; height: 20px; background: var(--border); margin: 0 2px; }
+.end-switch, .role-switch {
+  padding: 7px 18px; border-radius: 10px;
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  transition: all 0.25s var(--ease-out); letter-spacing: -0.1px; white-space: nowrap;
+  font-family: var(--font-title);
+}
+.end-switch:hover, .role-switch:hover { color: var(--text); }
+.end-switch.active, .role-switch.active {
+  background: var(--white); color: var(--accent);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.role-switch { padding: 5px 14px; font-size: 12px; }
+
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.topbar-icon-btn {
+  width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary); font-size: 17px; transition: all 0.2s var(--ease-out); position: relative;
+}
+.topbar-icon-btn:hover { background: var(--bg); color: var(--text); }
+.topbar-icon-btn .dot {
+  position: absolute; top: 9px; right: 9px; width: 7px; height: 7px;
+  border-radius: 50%; background: #EF4444; border: 2px solid var(--white);
+}
+.topbar-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg); display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-left: 4px;
+  font-family: var(--font-title);
+}
+
+/* ===== App Layout ===== */
+.app { position: relative; z-index: 2; padding-top: 88px; }
+.app-inner { max-width: 1280px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* ===== Page Header ===== */
+.page-head { margin-bottom: 32px; }
+.page-head h1 {
+  font-size: 34px; font-weight: 800; letter-spacing: -0.7px; color: var(--text);
+  margin-bottom: 6px; font-family: var(--font-title);
+}
+.page-head p { font-size: 15px; color: var(--text-secondary); max-width: 520px; line-height: 1.55; }
+
+/* ===== Nav Tabs ===== */
+.nav-tabs {
+  display: flex; gap: 0; margin-bottom: 28px;
+  border-bottom: 1px solid var(--border); padding-bottom: 0;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.nav-tab {
+  padding: 10px 20px; font-size: 14px; font-weight: 550; color: var(--text-secondary);
+  border-bottom: 2px solid transparent; transition: all 0.2s var(--ease-out);
+  cursor: pointer; margin-bottom: -1px; white-space: nowrap; letter-spacing: -0.1px;
+  font-family: var(--font-title);
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 650; }
+
+/* ===== Page Sections ===== */
+.page-section { display: none; }
+.page-section.active { display: block; }
+
+/* Slide-in entrance for cards */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.page-section.active .card,
+.page-section.active .bento-cell,
+.page-section.active .profile-card,
+.page-section.active .job-card,
+.page-section.active .iv-card,
+.page-section.active .of-card {
+  animation: slideIn 0.5s var(--ease-out) both;
+}
+.page-section.active .card:nth-child(1),
+.page-section.active .bento-cell:nth-child(1) { animation-delay: 0.04s; }
+.page-section.active .card:nth-child(2),
+.page-section.active .bento-cell:nth-child(2) { animation-delay: 0.08s; }
+.page-section.active .card:nth-child(3),
+.page-section.active .bento-cell:nth-child(3) { animation-delay: 0.12s; }
+.page-section.active .card:nth-child(4),
+.page-section.active .bento-cell:nth-child(4) { animation-delay: 0.16s; }
+.page-section.active .card:nth-child(5),
+.page-section.active .bento-cell:nth-child(5) { animation-delay: 0.20s; }
+.page-section.active .card:nth-child(6) { animation-delay: 0.24s; }
+.page-section.active .card:nth-child(7) { animation-delay: 0.28s; }
+.page-section.active .card:nth-child(8) { animation-delay: 0.32s; }
+
+/* ===== Card with Colored Top Accent Strip ===== */
+.card, .bento-cell {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  position: relative; overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s var(--ease-out);
+}
+.card:hover, .bento-cell:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+/* Colored top accent strip */
+.card::before, .bento-cell::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  opacity: 0; transition: opacity 0.35s var(--ease-out);
+}
+.card:hover::before, .bento-cell:hover::before { opacity: 1; }
+
+/* ===== Bento Grid ===== */
+.bento { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+.bento-cell { padding: 28px; }
+.bento-cell.col-2 { grid-column: span 2; }
+.bento-cell.col-3 { grid-column: span 3; }
+.bento-cell.col-4 { grid-column: span 4; }
+.bento-cell.row-2 { grid-row: span 2; }
+
+/* Highlight cell - always shows accent */
+.bento-cell.highlight { background: var(--accent-soft); border-color: transparent; }
+.bento-cell.highlight::before { opacity: 1; }
+
+/* ===== Stat Display ===== */
+.stat-display { margin-bottom: 4px; }
+.stat-display-value {
+  font-size: 38px; font-weight: 800; letter-spacing: -1px; color: var(--text);
+  line-height: 1; font-family: var(--font-mono);
+}
+.stat-display-label {
+  font-size: 11px; color: var(--text-tertiary); margin-top: 6px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.6px; font-family: var(--font-title);
+}
+.stat-display-change { font-size: 12px; font-weight: 600; margin-top: 4px; font-family: var(--font-mono); }
+.stat-display-change.up { color: #059669; }
+.stat-display-change.down { color: #DC2626; }
+.stat-icon { font-size: 20px; margin-bottom: 14px; opacity: 0.7; }
+
+/* ===== Quick Tiles ===== */
+.quick-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; cursor: pointer; }
+.quick-tile-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.quick-tile-label { font-size: 15px; font-weight: 650; color: var(--text); letter-spacing: -0.2px; font-family: var(--font-title); }
+.quick-tile-desc { font-size: 13px; color: var(--text-tertiary); line-height: 1.4; }
+
+/* Card header */
+.card { padding: 28px; margin-bottom: 18px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.card-title { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; color: var(--text); font-family: var(--font-title); }
+
+/* ===== Grid Layouts ===== */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.grid-2-wide { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+/* ===== Profile Header ===== */
+.profile-card {
+  background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-xl);
+  padding: 32px 36px; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 24px;
+  box-shadow: var(--shadow-card); position: relative; overflow: hidden;
+}
+.profile-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+}
+.profile-avatar-lg {
+  width: 80px; height: 80px; border-radius: 24px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; font-weight: 800; color: #fff; flex-shrink: 0;
+  font-family: var(--font-title);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+}
+.profile-name { font-size: 24px; font-weight: 750; letter-spacing: -0.4px; margin-bottom: 3px; font-family: var(--font-title); }
+.profile-desc { font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+
+/* ===== Job Cards ===== */
+.job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.job-card {
+  background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 24px; cursor: pointer; box-shadow: var(--shadow-card);
+  transition: all 0.3s var(--ease-out); position: relative; overflow: hidden;
+}
+.job-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  opacity: 0; transition: opacity 0.3s var(--ease-out);
+}
+.job-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-3px); }
+.job-card:hover::before { opacity: 1; }
+.job-card-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+.job-card-logo {
+  width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: #fff; font-family: var(--font-title);
+}
+.job-card-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 2px; font-family: var(--font-title); }
+.job-card-company { font-size: 13px; color: var(--text-tertiary); }
+.job-card-salary { font-size: 18px; font-weight: 750; color: #E54D3D; letter-spacing: -0.3px; margin-bottom: 10px; font-family: var(--font-mono); }
+.job-card-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.job-card-meta-item { font-size: 13px; color: var(--text-secondary); padding: 3px 10px; background: var(--bg); border-radius: 6px; }
+.job-card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ===== Tags ===== */
+.tag {
+  display: inline-flex; align-items: center; padding: 3px 10px;
+  border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: -0.1px; white-space: nowrap;
+  font-family: var(--font-title);
+}
+.tag-neutral { background: var(--bg); color: var(--text-secondary); }
+.tag-primary { background: var(--accent-soft); color: var(--accent); }
+.tag-success { background: #ECFDF5; color: #059669; }
+.tag-warning { background: #FFFBEB; color: #D97706; }
+.tag-danger { background: #FEF2F2; color: #DC2626; }
+.tag-info { background: #EFF6FF; color: #2563EB; }
+
+/* ===== Buttons with Elastic Bounce ===== */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 20px; border-radius: 10px;
+  font-size: 14px; font-weight: 620; letter-spacing: -0.1px;
+  transition: all 0.2s var(--ease-out);
+  white-space: nowrap; cursor: pointer; border: 1px solid transparent;
+  font-family: var(--font-title); position: relative;
+}
+.btn:active {
+  transform: scale(0.92);
+  transition: transform 0.35s var(--ease-bounce);
+}
+.btn-primary {
+  background: var(--text); color: #fff;
+}
+.btn-primary:hover { background: #3D3937; }
+
+.btn-accent {
+  background: var(--accent); color: #fff; font-weight: 700;
+  box-shadow: 0 4px 14px var(--accent-shadow);
+}
+.btn-accent:hover {
+  box-shadow: 0 6px 22px var(--accent-shadow);
+  transform: translateY(-1px);
+}
+.btn-accent:active {
+  transform: scale(0.92);
+  transition: transform 0.35s var(--ease-bounce);
+}
+
+.btn-outline {
+  background: var(--white); color: var(--text); border-color: var(--border);
+}
+.btn-outline:hover { background: var(--bg); border-color: var(--accent); color: var(--accent); }
+.btn-ghost { color: var(--text-secondary); }
+.btn-ghost:hover { background: var(--bg); color: var(--text); }
+.btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 8px; }
+.btn-xs { padding: 4px 10px; font-size: 12px; border-radius: 7px; }
+
+/* ===== Form Elements ===== */
+.input {
+  padding: 9px 14px; border: 1px solid var(--border); border-radius: 10px;
+  font-size: 14px; color: var(--text); background: var(--white);
+  outline: none; transition: all 0.2s var(--ease-out);
+}
+.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.input::placeholder { color: var(--text-tertiary); }
+.input-sm { padding: 7px 12px; font-size: 13px; border-radius: 8px; }
+.select {
+  padding: 9px 34px 9px 14px; border: 1px solid var(--border); border-radius: 10px;
+  font-size: 14px; color: var(--text); background: var(--white); outline: none;
+  cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235C5856' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  transition: border-color 0.2s var(--ease-out);
+}
+.select:focus { border-color: var(--accent); }
+
+/* ===== Table ===== */
+.table-wrap {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 18px;
+  box-shadow: var(--shadow-card);
+}
+.table-toolbar {
+  display: flex; align-items: center; gap: 10px; padding: 16px 24px;
+  border-bottom: 1px solid var(--border); flex-wrap: wrap;
+}
+.table-toolbar .spacer { flex: 1; }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  text-align: left; padding: 13px 24px; font-size: 11px; font-weight: 700;
+  color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.6px;
+  border-bottom: 1px solid var(--border); background: var(--bg);
+  font-family: var(--font-title);
+}
+tbody td { padding: 15px 24px; font-size: 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr { transition: background 0.15s var(--ease-out); }
+tbody tr:hover { background: var(--accent-soft); }
+.cell-title { font-weight: 650; }
+.cell-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+
+/* ===== Chat Layout ===== */
+.chat-shell {
+  display: grid; grid-template-columns: 300px 1fr; gap: 0;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); overflow: hidden;
+  height: calc(100dvh - 220px); min-height: 520px;
+  box-shadow: var(--shadow-card);
+}
+.conv-list { border-right: 1px solid var(--border); overflow-y: auto; }
+.conv-item {
+  padding: 18px 20px; border-bottom: 1px solid var(--border); cursor: pointer;
+  display: flex; gap: 12px; align-items: flex-start;
+  transition: background 0.15s var(--ease-out);
+}
+.conv-item:hover { background: var(--bg); }
+.conv-item.active { background: var(--accent-soft); }
+.conv-avatar {
+  width: 42px; height: 42px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 750; color: #fff; font-family: var(--font-title);
+}
+.conv-info { flex: 1; min-width: 0; }
+.conv-name { font-size: 14px; font-weight: 650; color: var(--text); margin-bottom: 2px; font-family: var(--font-title); }
+.conv-preview { font-size: 13px; color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-time { font-size: 11px; color: var(--text-tertiary); flex-shrink: 0; margin-top: 2px; font-family: var(--font-mono); }
+
+.chat-main { display: flex; flex-direction: column; }
+.chat-top { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.chat-top-name { font-size: 16px; font-weight: 700; font-family: var(--font-title); }
+.chat-top-sub { font-size: 12px; color: var(--text-secondary); }
+.chat-msgs { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+.chat-bubble {
+  max-width: 68%; padding: 13px 18px; border-radius: 16px;
+  font-size: 14px; line-height: 1.55;
+}
+.chat-bubble.in { background: var(--bg); align-self: flex-start; border-bottom-left-radius: 6px; }
+.chat-bubble.out {
+  background: var(--accent); color: #fff; align-self: flex-end;
+  border-bottom-right-radius: 6px; font-weight: 550;
+}
+.chat-input-row { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+.chat-input-row .input { flex: 1; }
+
+/* ===== AI Chat ===== */
+.ai-chat-shell {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); overflow: hidden;
+  height: calc(100dvh - 220px); min-height: 520px;
+  display: flex; flex-direction: column; box-shadow: var(--shadow-card);
+}
+.ai-chat-top { padding: 18px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
+.ai-chat-top-icon {
+  width: 42px; height: 42px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+  background: var(--accent-soft);
+}
+.ai-chat-top-title { font-size: 17px; font-weight: 750; letter-spacing: -0.2px; font-family: var(--font-title); }
+.ai-chat-top-desc { font-size: 12px; color: var(--text-secondary); }
+.ai-chat-body { flex: 1; overflow-y: auto; padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+.ai-msg { display: flex; gap: 12px; max-width: 82%; }
+.ai-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+.ai-msg-avatar {
+  width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.ai-msg-avatar.bot { background: var(--accent-soft); }
+.ai-msg-avatar.user { background: var(--bg); }
+.ai-msg-bubble { padding: 14px 20px; border-radius: 16px; font-size: 14px; line-height: 1.6; }
+.ai-msg-bubble.bot { background: var(--bg); border-bottom-left-radius: 6px; }
+.ai-msg-bubble.user { background: var(--accent); color: #fff; border-bottom-right-radius: 6px; font-weight: 550; }
+.ai-msg-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; margin-top: 10px;
+}
+.ai-msg-card-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; font-family: var(--font-title); }
+.ai-msg-card-sub { font-size: 12px; color: var(--text-secondary); }
+.ai-msg-card-match { font-size: 12px; font-weight: 650; color: #059669; margin-top: 4px; }
+.ai-chat-input-row { padding: 16px 28px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+.ai-chat-input-row .input { flex: 1; }
+
+/* ===== Timeline ===== */
+.timeline { position: relative; padding-left: 30px; }
+.timeline::before { content: ''; position: absolute; left: 9px; top: 6px; bottom: 6px; width: 2px; background: var(--border); border-radius: 1px; }
+.tl-item { position: relative; margin-bottom: 22px; }
+.tl-item:last-child { margin-bottom: 0; }
+.tl-dot {
+  position: absolute; left: -30px; top: 1px; width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--border); background: var(--white);
+  display: flex; align-items: center; justify-content: center; font-size: 10px;
+}
+.tl-dot.done { border-color: #059669; background: #ECFDF5; color: #059669; }
+.tl-dot.current { border-color: var(--accent); background: var(--accent-soft); }
+.tl-dot.pending { border-color: var(--border); }
+.tl-title { font-size: 14px; font-weight: 650; color: var(--text); font-family: var(--font-title); }
+.tl-time { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; font-family: var(--font-mono); }
+
+/* ===== Upload Zone ===== */
+.upload-zone {
+  border: 2px dashed var(--border); border-radius: var(--radius-xl);
+  padding: 60px 40px; text-align: center; cursor: pointer;
+  transition: all 0.3s var(--ease-out); background: var(--bg);
+}
+.upload-zone:hover { border-color: var(--accent); background: var(--accent-soft); }
+.upload-zone-icon { font-size: 44px; margin-bottom: 14px; opacity: 0.5; }
+.upload-zone-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; font-family: var(--font-title); }
+.upload-zone-hint { font-size: 13px; color: var(--text-tertiary); }
+
+/* ===== Notification ===== */
+.notif-item {
+  display: flex; gap: 14px; padding: 16px 24px; border-bottom: 1px solid var(--border);
+  cursor: pointer; align-items: flex-start; transition: background 0.15s var(--ease-out);
+}
+.notif-item:hover { background: var(--bg); }
+.notif-item.unread { background: var(--accent-soft); }
+.notif-item-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.notif-item-title { font-size: 14px; font-weight: 550; color: var(--text); font-family: var(--font-title); }
+.notif-item-time { font-size: 12px; color: var(--text-tertiary); margin-top: 3px; }
+
+/* ===== HC Grid ===== */
+.hc-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.hc-item { text-align: center; padding: 18px 12px; background: var(--bg); border-radius: 12px; }
+.hc-item-val { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; font-family: var(--font-mono); }
+.hc-item-lbl { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; font-family: var(--font-title); }
+
+/* ===== Interview Card ===== */
+.iv-card {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 24px; background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-md); margin-bottom: 10px;
+  box-shadow: var(--shadow-card); transition: all 0.25s var(--ease-out);
+  position: relative; overflow: hidden;
+}
+.iv-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  opacity: 0; transition: opacity 0.3s var(--ease-out);
+}
+.iv-card:hover { box-shadow: var(--shadow-card-hover); }
+.iv-card:hover::before { opacity: 1; }
+.iv-card-left { display: flex; align-items: center; gap: 14px; }
+.iv-card-avatar {
+  width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 750; color: #fff; font-family: var(--font-title);
+}
+.iv-card-name { font-size: 15px; font-weight: 650; font-family: var(--font-title); }
+.iv-card-job { font-size: 13px; color: var(--text-tertiary); }
+
+/* ===== Offer Card ===== */
+.of-card {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 24px; background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-md); margin-bottom: 10px;
+  box-shadow: var(--shadow-card); transition: all 0.25s var(--ease-out);
+  position: relative; overflow: hidden;
+}
+.of-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  opacity: 0; transition: opacity 0.3s var(--ease-out);
+}
+.of-card:hover { box-shadow: var(--shadow-card-hover); }
+.of-card:hover::before { opacity: 1; }
+.of-card-left { display: flex; align-items: center; gap: 14px; }
+.of-card-avatar {
+  width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 750; color: #fff; font-family: var(--font-title);
+}
+.of-card-name { font-size: 15px; font-weight: 650; font-family: var(--font-title); }
+.of-card-detail { font-size: 13px; color: var(--text-tertiary); }
+
+/* ===== Member List ===== */
+.member-row {
+  display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border);
+}
+.member-row:last-child { border-bottom: none; }
+.member-avatar {
+  width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 750; color: #fff; font-family: var(--font-title);
+}
+.member-info { flex: 1; }
+.member-name { font-size: 14px; font-weight: 650; font-family: var(--font-title); }
+.member-role { font-size: 12px; color: var(--text-secondary); }
+
+/* ===== Settings ===== */
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 15px 0; border-bottom: 1px solid var(--border);
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-label { font-size: 14px; color: var(--text); font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.setting-value { font-size: 14px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
+
+/* ===== Toggle ===== */
+.toggle {
+  width: 44px; height: 24px; border-radius: 12px; background: var(--border);
+  position: relative; cursor: pointer; transition: background 0.25s var(--ease-out); flex-shrink: 0;
+}
+.toggle.on { background: var(--accent); }
+.toggle::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 20px; height: 20px; border-radius: 50%; background: #fff;
+  transition: transform 0.3s var(--ease-bounce); box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+.toggle.on::after { transform: translateX(20px); }
+
+/* ===== Pagination ===== */
+.pg {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px; border-top: 1px solid var(--border);
+  font-size: 13px; color: var(--text-secondary);
+}
+.pg-btns { display: flex; gap: 4px; }
+.pg-btn {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 550; color: var(--text-secondary);
+  transition: all 0.15s var(--ease-out); font-family: var(--font-mono);
+}
+.pg-btn:hover { background: var(--bg); }
+.pg-btn.active { background: var(--accent); color: #fff; font-weight: 700; }
+
+/* ===== Chart Placeholder ===== */
+.chart-ph {
+  background: var(--bg); border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 180px; color: var(--text-tertiary); font-size: 13px;
+  border: 1px dashed var(--border);
+}
+
+/* ===== Empty State ===== */
+.empty { text-align: center; padding: 56px 24px; color: var(--text-tertiary); }
+.empty-icon { font-size: 42px; margin-bottom: 12px; opacity: 0.3; }
+.empty-text { font-size: 15px; font-weight: 550; margin-bottom: 4px; color: var(--text-secondary); font-family: var(--font-title); }
+.empty-hint { font-size: 13px; }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+
+/* ===== Badge ===== */
+.prototype-badge {
+  position: fixed; bottom: 20px; right: 20px; z-index: 999;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 20px; padding: 7px 16px; font-size: 11px; font-weight: 650;
+  color: var(--text-tertiary); letter-spacing: 0.3px;
+  font-family: var(--font-title); box-shadow: var(--shadow-card);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .bento { grid-template-columns: repeat(2, 1fr); }
+  .bento-cell.col-2, .bento-cell.col-3, .bento-cell.col-4 { grid-column: span 2; }
+  .grid-2, .grid-2-wide { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .chat-shell { grid-template-columns: 1fr; }
+  .conv-list { display: none; }
+  .job-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .hc-bar { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 768px) {
+  .topbar { width: calc(100% - 24px); border-radius: var(--radius-md); padding: 8px; }
+  .topbar-brand span { display: none; }
+  .end-switch { padding: 6px 12px; font-size: 12px; }
+  .app-inner { padding: 0 12px 60px; }
+  .page-head h1 { font-size: 24px; }
+  .bento { grid-template-columns: 1fr; }
+  .bento-cell.col-2, .bento-cell.col-3, .bento-cell.col-4 { grid-column: span 1; }
+  .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .profile-card { flex-direction: column; text-align: center; }
+  .nav-tabs { gap: 0; }
+  .nav-tab { padding: 8px 12px; font-size: 13px; }
+  .table-wrap { overflow-x: auto; }
+  .hc-bar { grid-template-columns: repeat(2, 1fr); }
+  .job-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-section.active .card,
+  .page-section.active .bento-cell,
+  .page-section.active .job-card { animation: none; }
+  .btn:active { transition: transform 0.1s ease; }
+  .toggle::after { transition: transform 0.1s ease; }
+}
+</style>
+</head>
+<body class="c-mode">
+<div class="app">
+  <header class="topbar" id="topbar">
+    <div class="topbar-brand">
+      <span class="topbar-brand-mark">灵</span>
+      <span>灵犀互聘</span>
+    </div>
+    <div class="end-switcher" id="endSwitcher">
+      <button class="end-switch active" data-end="c">求职者端</button>
+      <button class="end-switch" data-end="b">企业端</button>
+      <span class="end-divider" id="roleDivider" style="display:none;"></span>
+      <button class="role-switch active" data-role="hr" id="roleHR" style="display:none;">HR</button>
+      <button class="role-switch" data-role="interviewer" id="roleInt" style="display:none;">面试官</button>
+      <button class="end-switch" data-end="a">管理后台</button>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-icon-btn"><span style="font-size:18px;">&#128276;</span><span class="dot"></span></button>
+      <div class="topbar-avatar" id="topAvatar">张</div>
+    </div>
+  </header>
+  <div class="app-inner">
+    <div id="pageContent"></div>
+  </div>
+</div>
+<div class="prototype-badge">原型 v4.0</div>
+
+<script>
+const menu = {
+  c: [
+    { id:'c-home', label:'首页' },
+    { id:'c-jobs', label:'岗位探索' },
+    { id:'c-ai', label:'AI 求职助手' },
+    { id:'c-resume', label:'简历管理' },
+    { id:'c-application', label:'投递进度' },
+    { id:'c-messages', label:'消息沟通' },
+    { id:'c-mock-interview', label:'模拟面试' },
+    { id:'c-notifications', label:'消息通知' },
+    { id:'c-profile', label:'个人中心' },
+  ],
+  b_hr: [
+    { id:'b-dashboard', label:'工作台' },
+    { id:'b-jobs', label:'岗位管理' },
+    { id:'b-candidates', label:'人才库' },
+    { id:'b-interview', label:'面试协同' },
+    { id:'b-offer', label:'Offer 管理' },
+    { id:'b-messages', label:'消息沟通' },
+    { id:'b-notifications', label:'消息通知' },
+    { id:'b-company', label:'公司管理' },
+    { id:'b-profile', label:'个人中心' },
+  ],
+  b_interviewer: [
+    { id:'i-interview', label:'我的面试' },
+    { id:'i-candidates', label:'候选人' },
+    { id:'i-profile', label:'个人中心' },
+  ],
+  a: [
+    { id:'a-dashboard', label:'数据看板' },
+    { id:'a-audit', label:'企业认证审核' },
+    { id:'a-enterprise', label:'企业管理' },
+    { id:'a-hr', label:'HR 管理' },
+    { id:'a-interviewer', label:'面试官管理' },
+    { id:'a-job', label:'岗位管理' },
+    { id:'a-candidate', label:'求职者管理' },
+    { id:'a-announcement', label:'系统公告' },
+    { id:'a-auditlog', label:'操作日志' },
+    { id:'a-config', label:'系统配置' },
+  ]
+};
+
+const avatars = { c:'张', b:'李', a:'管', i:'面' };
+const defaults = { c:'c-home', b:'b-dashboard', a:'a-dashboard', i:'i-interview' };
+let curEnd = 'c', curPage = 'c-home', bRole = 'hr'; // bRole: 'hr' | 'interviewer'
+
+// ===== PAGE TEMPLATES =====
+const T = {
+
+'c-home': () => `
+<div class="page-head"><h1>下午好，张三</h1><p>完善信息，获取更精准的岗位推荐</p></div>
+<div class="bento">
+  <div class="bento-cell col-2 row-2 highlight" style="padding:32px;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+      <div style="width:48px;height:48px;border-radius:14px;background:var(--c-accent-soft);display:flex;align-items:center;justify-content:center;font-size:24px;">&#129302;</div>
+      <div><div style="font-size:18px;font-weight:750;letter-spacing:-0.3px;">AI 求职助手</div><div style="font-size:13px;color:var(--text-tertiary);font-family:var(--font-title);">基于 DeepSeek 大模型</div></div>
+    </div>
+    <div style="background:var(--bg-subtle);border-radius:12px;padding:16px 20px;margin-bottom:16px;color:var(--text-tertiary);font-size:14px;">输入求职需求，AI 帮你精准匹配岗位...</div>
+    <button class="btn btn-accent" onclick="navTo('c-ai')">开始对话 &rarr;</button>
+  </div>
+  <div class="bento-cell accent quick-tile" onclick="navTo('c-resume')">
+    <div class="quick-tile-icon" style="background:#EEF2FF;">&#128196;</div>
+    <div class="quick-tile-label">简历诊断</div>
+    <div class="quick-tile-desc">上传简历，AI 智能分析与优化</div>
+  </div>
+  <div class="bento-cell accent quick-tile" onclick="navTo('c-jobs')">
+    <div class="quick-tile-icon" style="background:#F0FDF4;">&#127919;</div>
+    <div class="quick-tile-label">岗位探索</div>
+    <div class="quick-tile-desc">发现匹配你的职业机会</div>
+  </div>
+  <div class="bento-cell accent quick-tile" onclick="navTo('c-application')">
+    <div class="quick-tile-icon" style="background:#FFF7ED;">&#128202;</div>
+    <div class="quick-tile-label">投递进度</div>
+    <div class="quick-tile-desc">追踪每一次投递状态</div>
+  </div>
+  <div class="bento-cell accent quick-tile" onclick="navTo('c-mock-interview')">
+    <div class="quick-tile-icon" style="background:#FDF2F8;">&#127775;</div>
+    <div class="quick-tile-label">模拟面试</div>
+    <div class="quick-tile-desc">AI 面试官实战演练</div>
+  </div>
+</div>
+`,
+
+'c-jobs': () => `
+<div class="page-head"><h1>岗位探索</h1><p>发现适合你的职业机会</p></div>
+<div class="card" style="margin-bottom:20px;">
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <input class="input" placeholder="搜索岗位名称、职责或技能" style="min-width:280px;">
+    <select class="select"><option>全部城市</option><option>北京</option><option>上海</option><option>杭州</option><option>深圳</option></select>
+    <button class="btn btn-accent">搜索</button>
+    <button class="btn btn-outline">重置</button>
+  </div>
+</div>
+<div style="font-size:14px;color:var(--text-secondary);margin-bottom:14px;font-weight:550;">共 128 个在招岗位</div>
+<div class="job-grid">
+  ${[
+    ['高级前端工程师','阿里巴巴','杭州','25K-40K','3-5年','本科',['React','TypeScript','Node.js'],'#4F46E5','#EEF2FF'],
+    ['Java 后端开发','明略科技','北京','30K-50K','5-10年','硕士',['Java','Spring Cloud','MySQL'],'#059669','#ECFDF5'],
+    ['产品经理','字节跳动','上海','20K-35K','3-5年','本科',['产品设计','数据分析','用户研究'],'#D97706','#FFF7ED'],
+    ['数据分析师','腾讯','深圳','28K-45K','2-4年','本科',['Python','SQL','Tableau'],'#DB2777','#FDF2F8'],
+  ].map(([t,c,ci,s,exp,edu,tags,ac,bg]) => `
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-logo" style="background:${bg};color:${ac};">${c[0]}</div>
+        <div style="flex:1;min-width:0;"><div class="job-card-title">${t}</div><div class="job-card-company">${c}</div></div>
+      </div>
+      <div class="job-card-salary">${s}</div>
+      <div class="job-card-meta"><span class="job-card-meta-item">${ci}</span><span class="job-card-meta-item">${exp}</span><span class="job-card-meta-item">${edu}</span></div>
+      <div class="job-card-tags">${tags.map(tg=>`<span class="tag tag-neutral">${tg}</span>`).join(' ')}</div>
+    </div>
+  `).join('')}
+</div>
+<div class="pg"><span>共 128 条</span><div class="pg-btns"><button class="pg-btn">&larr;</button><button class="pg-btn active">1</button><button class="pg-btn">2</button><button class="pg-btn">3</button><button class="pg-btn">&rarr;</button></div></div>
+`,
+
+'c-ai': () => `
+<div class="page-head"><h1>AI 求职助手</h1><p>智能对话，精准匹配岗位</p></div>
+<div class="ai-chat-shell">
+  <div class="ai-chat-top"><div class="ai-chat-top-icon">&#129302;</div><div><div class="ai-chat-top-title">求职助手</div><div class="ai-chat-top-desc">基于 DeepSeek 大模型，实时流式对话</div></div></div>
+  <div class="ai-chat-body">
+    <div class="ai-msg"><div class="ai-msg-avatar bot">&#129302;</div><div class="ai-msg-bubble bot">你好！我是你的 AI 求职助手。告诉我你的求职需求，比如期望城市、薪资、技术栈，我会帮你精准匹配岗位。</div></div>
+    <div class="ai-msg user"><div class="ai-msg-avatar user">&#128100;</div><div class="ai-msg-bubble user">帮我找杭州 20K 以上的 React 前端岗位</div></div>
+    <div class="ai-msg"><div class="ai-msg-avatar bot">&#129302;</div>
+      <div class="ai-msg-bubble bot">
+        <div style="margin-bottom:10px;">为你找到 <b>12 个</b>匹配岗位，Top 3 推荐：</div>
+        <div class="ai-msg-card"><div class="ai-msg-card-title">高级前端工程师</div><div class="ai-msg-card-sub">阿里巴巴 - 杭州 - 25K-40K</div><div class="ai-msg-card-match">匹配度 92% - React 项目经验高度匹配</div></div>
+        <div class="ai-msg-card"><div class="ai-msg-card-title">前端技术专家</div><div class="ai-msg-card-sub">蚂蚁集团 - 杭州 - 30K-50K</div><div class="ai-msg-card-match">匹配度 87% - TypeScript 能力强</div></div>
+        <div class="ai-msg-card"><div class="ai-msg-card-title">Web 前端开发</div><div class="ai-msg-card-sub">网易 - 杭州 - 22K-35K</div><div class="ai-msg-card-match">匹配度 85% - 项目经验相关</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ai-chat-input-row"><input class="input" placeholder="输入求职需求..."><button class="btn btn-accent">发送</button></div>
+</div>
+`,
+
+'c-resume': () => `
+<div class="page-head"><h1>简历管理</h1><p>上传简历，AI 智能解析与诊断</p></div>
+<div class="grid-2">
+  <div>
+    <div class="upload-zone"><div class="upload-zone-icon">&#128196;</div><div class="upload-zone-title">点击或拖拽上传简历</div><div class="upload-zone-hint">支持 PDF / Word / 图片，文件不超过 10MB</div></div>
+    <div class="card" style="margin-top:16px;">
+      <div class="card-title">解析进度</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;color:#059669;">&#10003; 正在提取文本...</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;color:var(--text-secondary);">&#9203; 正在分析技能栈...</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-tertiary);">&#9711; 正在生成能力模型...</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">已上传简历</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border-light);">
+      <div><div style="font-size:14px;font-weight:650;">张三_高级前端工程师.pdf</div><div style="font-size:12px;color:var(--text-tertiary);">上传于 2026-07-28</div></div>
+      <div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm">预览</button><button class="btn btn-accent btn-sm">诊断</button></div>
+    </div>
+    <div class="empty" style="padding:32px 0;"><div class="empty-icon">&#128196;</div><div class="empty-text">仅展示最近上传的简历</div></div>
+  </div>
+</div>
+`,
+
+'c-application': () => `
+<div class="page-head"><h1>投递进度</h1><p>追踪你的每一次投递</p></div>
+<div class="grid-2-wide">
+  <div class="card">
+    <div class="card-title">投递记录</div>
+    ${[
+      ['高级前端工程师','阿里巴巴','已投递','tag-neutral'],
+      ['Java 后端开发','明略科技','面试中','tag-info'],
+      ['产品经理','字节跳动','已淘汰','tag-danger'],
+      ['数据分析师','腾讯','已录用','tag-success'],
+    ].map(([t,c,s,tag]) => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border-light);">
+        <div><div style="font-size:14px;font-weight:550;">${t}</div><div style="font-size:12px;color:var(--text-tertiary);">${c}</div></div>
+        <span class="tag ${tag}">${s}</span>
+      </div>
+    `).join('')}
+  </div>
+  <div class="card">
+    <div class="card-title">状态时间线</div>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot done">&#10003;</div><div class="tl-title">已投递</div><div class="tl-time">2026-07-27 14:30</div></div>
+      <div class="tl-item"><div class="tl-dot done">&#10003;</div><div class="tl-title">HR 已查看</div><div class="tl-time">2026-07-27 16:45</div></div>
+      <div class="tl-item"><div class="tl-dot current"></div><div class="tl-title">筛选通过</div><div class="tl-time">待进行</div></div>
+      <div class="tl-item"><div class="tl-dot pending"></div><div class="tl-title">面试安排</div><div class="tl-time">待进行</div></div>
+    </div>
+  </div>
+</div>
+`,
+
+'c-messages': () => `
+<div class="page-head"><h1>消息沟通</h1><p>与 HR 实时沟通</p></div>
+<div class="chat-shell">
+  <div class="conv-list">
+    ${[
+      ['李 HR','高级前端工程师','好的，那我们安排面试...','2分钟前','#4F46E5','#EEF2FF'],
+      ['王经理','Java 后端','您好，我对这个岗位感...','1小时前','#059669','#ECFDF5'],
+      ['赵 HR','产品经理','感谢您的投递，我们已...','昨天','#D97706','#FFF7ED'],
+    ].map(([n,j,pre,tm,ac,bg],i) => `
+      <div class="conv-item ${i===0?'active':''}">
+        <div class="conv-avatar" style="background:${bg};color:${ac};">${n[0]}</div>
+        <div class="conv-info"><div class="conv-name">${n}</div><div class="conv-preview">${pre}</div></div>
+        <div class="conv-time">${tm}</div>
+      </div>
+    `).join('')}
+  </div>
+  <div class="chat-main">
+    <div class="chat-top"><div><div class="chat-top-name">李 HR</div><div class="chat-top-sub">高级前端工程师</div></div><div style="display:flex;gap:8px;"><button class="btn btn-outline btn-sm">查看简历</button><button class="btn btn-accent btn-sm">邀约面试</button></div></div>
+    <div class="chat-msgs">
+      <div class="chat-bubble in">您好，我是阿里巴巴的 HR，看到您的简历非常匹配我们的高级前端岗位。</div>
+      <div class="chat-bubble out">您好！我对这个岗位很感兴趣，可以了解一下具体的技术栈要求吗？</div>
+      <div class="chat-bubble in">我们主要使用 React + TypeScript + Node.js，希望候选人有 3 年以上经验。</div>
+      <div class="chat-bubble out">好的，那面试时间我们可以定在下周三下午吗？</div>
+    </div>
+    <div class="chat-input-row"><input class="input" placeholder="输入消息..."><button class="btn btn-accent">发送</button></div>
+  </div>
+</div>
+`,
+
+'c-mock-interview': () => `
+<div class="page-head"><h1>模拟面试</h1><p>AI 面试官实战演练，提升面试能力</p></div>
+<div class="grid-2-wide">
+  <div class="card" style="padding:32px;">
+    <div style="text-align:center;padding:20px 0;">
+      <div style="font-size:48px;margin-bottom:16px;">&#127775;</div>
+      <div style="font-size:20px;font-weight:750;letter-spacing:-0.3px;margin-bottom:8px;">准备开始模拟面试</div>
+      <div style="font-size:14px;color:var(--text-secondary);margin-bottom:24px;">选择目标岗位，AI 将为你生成针对性面试题</div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">
+        <select class="select" style="min-width:200px;"><option>选择目标岗位</option><option>高级前端工程师</option><option>Java 后端开发</option><option>产品经理</option></select>
+        <select class="select"><option>5 题</option><option>8 题</option></select>
+      </div>
+      <button class="btn btn-accent" style="font-size:16px;padding:12px 32px;">开始模拟面试</button>
+    </div>
+  </div>
+  <div class="card" style="padding:24px;">
+    <div class="card-title" style="margin-bottom:14px;">历史面试报告</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border-light);">
+      <div><div style="font-size:14px;font-weight:650;">高级前端工程师 - 模拟面试</div><div style="font-size:12px;color:var(--text-tertiary);">2026-07-25</div></div>
+      <div style="text-align:right;"><div style="font-size:20px;font-weight:800;color:#059669;">78 分</div><div style="font-size:11px;color:var(--text-tertiary);">综合评分</div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border-light);">
+      <div><div style="font-size:14px;font-weight:650;">Java 后端开发 - 模拟面试</div><div style="font-size:12px;color:var(--text-tertiary);">2026-07-18</div></div>
+      <div style="text-align:right;"><div style="font-size:20px;font-weight:800;color:#D97706;">65 分</div><div style="font-size:11px;color:var(--text-tertiary);">综合评分</div></div>
+    </div>
+    <div class="empty" style="padding:20px 0;"><div class="empty-hint">完成更多模拟面试来提升分数</div></div>
+  </div>
+</div>
+<div class="card" style="margin-top:18px;padding:28px 32px;">
+  <div class="card-title" style="margin-bottom:16px;">面试技能雷达</div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;text-align:center;">
+    ${[
+      ['技术深度','72','#4F46E5'],
+      ['项目经验','85','#059669'],
+      ['沟通表达','68','#D97706'],
+      ['系统设计','60','#DB2777'],
+      ['学习能力','80','#2563EB'],
+    ].map(([label,score,color]) => `
+      <div style="background:var(--bg-subtle);border-radius:14px;padding:18px 12px;">
+        <div style="width:56px;height:56px;border-radius:50%;border:3px solid ${color};margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:${color};">${score}</div>
+        <div style="font-size:13px;font-weight:600;">${label}</div>
+      </div>
+    `).join('')}
+  </div>
+</div>
+`,
+
+'c-notifications': () => `
+<div class="page-head"><h1>消息通知</h1><p>及时了解投递进展</p></div>
+<div class="bento" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value">12</div><div class="stat-display-label">全部通知</div></div></div>
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value" style="color:#EF4444;">3</div><div class="stat-display-label">未读</div></div></div>
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value">5</div><div class="stat-display-label">投递</div></div></div>
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value">4</div><div class="stat-display-label">面试</div></div></div>
+</div>
+<div class="table-wrap">
+  <div class="notif-item unread"><div class="notif-item-icon">&#128196;</div><div><div class="notif-item-title">阿里巴巴的 HR 已查看您的简历</div><div class="notif-item-time">高级前端工程师 - 2分钟前</div></div></div>
+  <div class="notif-item unread"><div class="notif-item-icon">&#127881;</div><div><div class="notif-item-title">恭喜！您已通过简历筛选</div><div class="notif-item-time">前端开发工程师 - 1小时前</div></div></div>
+  <div class="notif-item"><div class="notif-item-icon">&#128197;</div><div><div class="notif-item-title">字节跳动邀请您参加面试</div><div class="notif-item-time">明天 14:00 - 昨天</div></div></div>
+  <div class="notif-item"><div class="notif-item-icon">&#128188;</div><div><div class="notif-item-title">为您推荐 5 个匹配度 &gt;85% 的岗位</div><div class="notif-item-time">点击查看 - 3天前</div></div></div>
+</div>
+`,
+
+'c-profile': () => `
+<div class="page-head"><h1>个人中心</h1><p>管理你的账号与隐私设置</p></div>
+<div class="profile-card">
+  <div class="profile-avatar-lg">张</div>
+  <div style="flex:1;"><div class="profile-name">张三</div><div class="profile-desc">高级前端工程师 - 杭州<span class="tag tag-success">求职中</span></div></div>
+  <button class="btn btn-outline">编辑资料</button>
+</div>
+<div class="grid-2">
+  <div class="card"><div class="card-title">功能入口</div>
+    <div class="setting-row"><span class="setting-label">&#128196; 我的简历</span><span style="color:var(--text-tertiary);">&rarr;</span></div>
+    <div class="setting-row"><span class="setting-label">&#128202; 投递记录</span><span style="color:var(--text-tertiary);">&rarr;</span></div>
+    <div class="setting-row"><span class="setting-label">&#127919; 面试记录</span><span style="color:var(--text-tertiary);">&rarr;</span></div>
+    <div class="setting-row"><span class="setting-label">&#128276; 消息通知</span><span class="tag tag-danger" style="margin-right:8px;">3</span></div>
+  </div>
+  <div class="card"><div class="card-title">隐私设置</div>
+    <div class="setting-row"><span class="setting-label">简历公开</span><div class="toggle on"></div></div>
+    <div class="setting-row"><span class="setting-label">匹配通知</span><div class="toggle on"></div></div>
+    <div class="setting-row"><span class="setting-label">当前状态</span><select class="select" style="padding:6px 30px 6px 10px;font-size:13px;"><option>求职中</option><option>在职看机会</option><option>暂不考虑</option></select></div>
+    <div class="setting-row"><span class="setting-label">盲选模式</span><div class="toggle"></div></div>
+  </div>
+</div>
+<button class="btn btn-ghost" style="color:#DC2626;width:100%;padding:14px;margin-top:8px;font-size:15px;">退出登录</button>
+`,
+
+// ===== B 端 =====
+'b-dashboard': () => `
+<div class="page-head"><h1>工作台</h1><p>招聘数据一览</p></div>
+<div class="bento">
+  <div class="bento-cell"><div class="stat-icon">&#128196;</div><div class="stat-display"><div class="stat-display-value">47</div><div class="stat-display-label">今日投递</div><div class="stat-display-change up">+12% 较昨日</div></div></div>
+  <div class="bento-cell"><div class="stat-icon">&#9203;</div><div class="stat-display"><div class="stat-display-value">23</div><div class="stat-display-label">待处理</div><div class="stat-display-change down">-5% 较昨日</div></div></div>
+  <div class="bento-cell"><div class="stat-icon">&#128197;</div><div class="stat-display"><div class="stat-display-value">8</div><div class="stat-display-label">本周面试</div><div class="stat-display-change up">+2 新增</div></div></div>
+  <div class="bento-cell"><div class="stat-icon">&#10003;</div><div class="stat-display"><div class="stat-display-value">5</div><div class="stat-display-label">本月录用</div><div class="stat-display-change up">+1 较上月</div></div></div>
+</div>
+<div class="grid-2">
+  <div class="card"><div class="card-title">投递趋势（近 30 天）</div><div class="chart-ph" style="height:200px;">投递趋势折线图 - AntV G2</div></div>
+  <div class="card"><div class="card-title">招聘漏斗</div><div class="chart-ph" style="height:200px;">招聘漏斗图 - AntV G2</div></div>
+</div>
+`,
+
+'b-jobs': () => `
+<div class="page-head"><h1>岗位管理</h1><p>管理本企业岗位、状态与 Headcount</p></div>
+<div class="table-wrap">
+  <div class="table-toolbar">
+    <button class="btn btn-ghost btn-sm" style="font-weight:650;color:var(--text);">全部</button>
+    <button class="btn btn-ghost btn-sm">草稿</button>
+    <button class="btn btn-ghost btn-sm">招聘中</button>
+    <button class="btn btn-ghost btn-sm">已关闭</button>
+    <span class="spacer"></span>
+    <input class="input input-sm" placeholder="岗位名称关键词" style="width:180px;">
+    <button class="btn btn-accent btn-sm">查询</button>
+    <button class="btn btn-outline btn-sm">重置</button>
+    <button class="btn btn-accent">+ 创建新岗位</button>
+  </div>
+  <table>
+    <thead><tr><th>岗位</th><th>城市</th><th>状态</th><th>核心技能</th><th>HC 明细</th><th>发布时间</th><th>操作</th></tr></thead>
+    <tbody>${[
+      ['高级前端工程师','杭州','招聘中','React, TS, Node.js','3/2/0/1','2026-07-20','tag-success'],
+      ['Java 后端开发','北京','招聘中','Java, Spring, MySQL','5/3/1/1','2026-07-18','tag-success'],
+      ['产品经理','上海','草稿','产品设计, 数据分析','2/0/0/2','-','tag-neutral'],
+      ['UI 设计师','深圳','已关闭','Figma, Sketch','1/1/0/0','2026-06-15','tag-danger'],
+    ].map(([t,ci,s,sk,hc,d,tag]) => `
+      <tr>
+        <td><div class="cell-title">${t}</div><div class="cell-sub">JOB-${Math.floor(Math.random()*9000)+1000}</div></td>
+        <td>${ci}</td><td><span class="tag ${tag}">${s}</span></td>
+        <td>${sk.split(', ').map(x=>`<span class="tag tag-neutral" style="margin-right:3px;">${x}</span>`).join('')}</td>
+        <td>${hc}</td><td>${d}</td>
+        <td><div style="display:flex;gap:6px;"><button class="btn btn-ghost btn-xs">查看</button><button class="btn btn-ghost btn-xs">编辑</button>${s==='草稿'?'<button class="btn btn-accent btn-xs">发布</button>':''}</div></td>
+      </tr>
+    `).join('')}</tbody>
+  </table>
+  <div class="pg"><span>共 24 条</span><div class="pg-btns"><button class="pg-btn">&larr;</button><button class="pg-btn active">1</button><button class="pg-btn">2</button><button class="pg-btn">&rarr;</button></div></div>
+</div>
+`,
+
+'b-candidates': () => `
+<div class="page-head"><h1>人才库</h1><p>管理和筛选候选人</p></div>
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-title">Top 5 推荐候选人</div>
+  <div class="grid-3" style="margin-top:8px;">${[
+    ['王小明','92%','#4F46E5','#EEF2FF'],
+    ['李小红','88%','#059669','#ECFDF5'],
+    ['赵大伟','85%','#D97706','#FFF7ED'],
+    ['陈小芳','82%','#DB2777','#FDF2F8'],
+    ['刘建国','80%','#2563EB','#EFF6FF'],
+  ].map(([n,s,ac,bg]) => `
+    <div style="background:var(--bg-subtle);border-radius:14px;padding:18px;text-align:center;">
+      <div style="width:48px;height:48px;border-radius:14px;background:${bg};color:${ac};margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:750;">${n[0]}</div>
+      <div style="font-size:14px;font-weight:650;">${n}</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin:4px 0;">匹配度 ${s}</div>
+      <button class="btn btn-accent btn-sm" style="margin-top:8px;">发消息</button>
+    </div>
+  `).join('')}</div>
+</div>
+<div class="table-wrap">
+  <div class="table-toolbar">
+    <select class="select input-sm"><option>全部状态</option><option>已投递</option><option>HR已查看</option><option>筛选通过</option></select>
+    <select class="select input-sm"><option>全部匹配度</option><option>70%+</option><option>80%+</option><option>90%+</option></select>
+    <input class="input input-sm" placeholder="搜索候选人姓名或技能" style="width:200px;">
+    <button class="btn btn-outline btn-sm">重置</button>
+  </div>
+  <table>
+    <thead><tr><th>候选人</th><th>投递岗位</th><th>匹配度</th><th>状态</th><th>投递时间</th><th>操作</th></tr></thead>
+    <tbody>${[
+      ['王小明','高级前端工程师','92%','已投递','2026-07-29','tag-neutral'],
+      ['李小红','Java 后端开发','88%','HR已查看','2026-07-28','tag-info'],
+      ['赵大伟','产品经理','85%','筛选通过','2026-07-27','tag-success'],
+    ].map(([n,j,s,st,d,tag]) => `
+      <tr><td class="cell-title">${n}</td><td>${j}</td><td style="font-weight:700;color:#059669;">${s}</td><td><span class="tag ${tag}">${st}</span></td><td>${d}</td><td><div style="display:flex;gap:6px;"><button class="btn btn-ghost btn-xs">查看</button><button class="btn btn-accent btn-xs">标记合适</button></div></td></tr>
+    `).join('')}</tbody>
+  </table>
+  <div class="pg"><span>共 156 条</span><div class="pg-btns"><button class="pg-btn">&larr;</button><button class="pg-btn active">1</button><button class="pg-btn">2</button><button class="pg-btn">&rarr;</button></div></div>
+</div>
+`,
+
+'b-interview': () => `
+<div class="page-head"><h1>面试协同</h1><p>为合适的候选人安排面试，分配面试官与时间</p></div>
+
+<!-- Stats Row -->
+<div class="bento" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value">12</div><div class="stat-display-label">本周面试</div></div></div>
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value" style="color:#D97706;">3</div><div class="stat-display-label">待确认</div></div></div>
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value" style="color:#2563EB;">4</div><div class="stat-display-label">进行中</div></div></div>
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value" style="color:#059669;">5</div><div class="stat-display-label">已完成</div></div></div>
+</div>
+
+<!-- Tabs -->
+<div class="nav-tabs"><button class="nav-tab active">面试安排 (10)</button><button class="nav-tab">待评估 (2)</button></div>
+
+<!-- Arrange Button -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+  <div style="display:flex;gap:10px;align-items:center;">
+    <select class="select input-sm"><option>全部状态</option><option>待确认</option><option>已确认</option><option>进行中</option><option>已完成</option></select>
+    <select class="select input-sm"><option>全部面试官</option><option>张面试官</option><option>王面试官</option></select>
+    <input class="input input-sm" placeholder="搜索候选人" style="width:180px;">
+  </div>
+  <button class="btn btn-accent" style="font-size:14px;padding:10px 22px;" onclick="document.getElementById('interviewModal').style.display='flex'">+ 安排面试</button>
+</div>
+
+<!-- Interview Cards -->
+<div style="display:flex;flex-direction:column;gap:10px;">
+${[
+  ['王小明','高级前端工程师','张面试官','2026-08-01 14:00','视频面试','待确认','tag-warning','meeting.lingxi.com/abc','#4F46E5','#EEF2FF'],
+  ['李小红','Java 后端开发','王面试官','2026-08-02 10:00','现场面试','已确认','tag-info','杭州西溪园区 3F-301','#059669','#ECFDF5'],
+  ['赵大伟','产品经理','陈面试官','2026-07-30 15:00','电话面试','进行中','tag-primary','-','#D97706','#FFF7ED'],
+  ['陈小芳','数据分析师','张面试官','2026-07-29 09:00','视频面试','已完成','tag-success','meeting.lingxi.com/def','#DB2777','#FDF2F8'],
+  ['刘建国','前端工程师','王面试官','2026-08-03 11:00','视频面试','待确认','tag-warning','meeting.lingxi.com/ghi','#2563EB','#EFF6FF'],
+].map(([name,job,iv,time,format,status,tag,link,ac,bg]) => `
+<div class="iv-card" style="padding:20px 24px;">
+  <div class="iv-card-left" style="flex:1;">
+    <div class="iv-card-avatar" style="background:${bg};color:${ac};">${name[0]}</div>
+    <div style="flex:1;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span class="iv-card-name">${name}</span>
+        <span style="font-size:12px;color:var(--text-tertiary);">|</span>
+        <span class="iv-card-job">${job}</span>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--text-secondary);margin-bottom:2px;">
+        <span>&#128197; ${time}</span>
+        <span>&#128100; ${iv}</span>
+        <span>&#128172; ${format}</span>
+        <span style="color:var(--c-accent);">&#128279; ${link}</span>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+    <span class="tag ${tag}">${status}</span>
+    ${status==='待确认' ? '<button class="btn btn-accent btn-sm">开始面试</button><button class="btn btn-outline btn-sm">重新安排</button><button class="btn btn-ghost btn-sm" style="color:#DC2626;">取消</button>' :
+      status==='已确认' ? '<button class="btn btn-accent btn-sm">开始面试</button><button class="btn btn-ghost btn-sm" style="color:#DC2626;">取消</button>' :
+      status==='进行中' ? '<button class="btn btn-accent btn-sm">录入评估</button>' :
+      '<button class="btn btn-outline btn-sm">查看评估</button>'}
+  </div>
+</div>
+`).join('')}
+</div>
+
+<!-- Interview Arrange Modal -->
+<div id="interviewModal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:center;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:rgba(15,23,42,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--border-glow);border-radius:var(--radius-xl);width:560px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg),0 0 40px rgba(0,229,255,0.05);padding:32px;" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <div style="font-size:18px;font-weight:750;letter-spacing:-0.3px;">安排面试</div>
+      <button onclick="document.getElementById('interviewModal').style.display='none'" style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:18px;transition:all 0.15s var(--ease-out);" onmouseenter="this.style.background='rgba(255,255,255,0.08)'" onmouseleave="this.style.background=''">&times;</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <div style="font-size:12px;font-weight:650;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;font-family:var(--font-title);">候选人</div>
+        <select class="select" style="width:100%;"><option>请选择候选人</option><option>王小明 - 高级前端工程师 (匹配度 92%)</option><option>李小红 - Java 后端开发 (匹配度 88%)</option><option>赵大伟 - 产品经理 (匹配度 85%)</option></select>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:650;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;">面试岗位</div>
+        <select class="select" style="width:100%;"><option>请选择岗位</option><option>高级前端工程师</option><option>Java 后端开发</option><option>产品经理</option></select>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:650;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;">面试官</div>
+        <select class="select" style="width:100%;"><option>请选择面试官</option><option>张面试官 - 技术总监</option><option>王面试官 - 前端负责人</option><option>陈面试官 - 技术经理</option></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div>
+          <div style="font-size:12px;font-weight:650;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;">面试日期</div>
+          <input class="input" type="date" style="width:100%;">
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:650;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;">面试时间</div>
+          <input class="input" type="time" style="width:100%;">
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:650;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;">面试方式</div>
+        <div style="display:flex;gap:10px;">
+          <label style="display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;cursor:pointer;font-size:13px;font-weight:550;transition:all 0.2s var(--ease-out);background:rgba(255,255,255,0.03);" onmouseenter="this.style.borderColor='var(--cyan)';this.style.background='rgba(0,229,255,0.06)'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.1)';this.style.background='rgba(255,255,255,0.03)'"><input type="radio" name="format" checked style="accent-color:var(--b-accent);"> 视频面试</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;cursor:pointer;font-size:13px;font-weight:550;transition:all 0.2s var(--ease-out);background:rgba(255,255,255,0.03);" onmouseenter="this.style.borderColor='var(--cyan)';this.style.background='rgba(0,229,255,0.06)'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.1)';this.style.background='rgba(255,255,255,0.03)'"><input type="radio" name="format" style="accent-color:var(--b-accent);"> 电话面试</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;cursor:pointer;font-size:13px;font-weight:550;transition:all 0.2s var(--ease-out);background:rgba(255,255,255,0.03);" onmouseenter="this.style.borderColor='var(--cyan)';this.style.background='rgba(0,229,255,0.06)'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.1)';this.style.background='rgba(255,255,255,0.03)'"><input type="radio" name="format" style="accent-color:var(--b-accent);"> 现场面试</label>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:650;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;">会议链接 / 地址</div>
+        <input class="input" placeholder="视频会议链接或现场面试地址" style="width:100%;">
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:650;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;">备注（选填）</div>
+        <textarea class="input" placeholder="面试注意事项、考察重点等..." style="width:100%;min-height:80px;resize:vertical;background:rgba(15,23,42,0.6);color:var(--text);border-color:rgba(255,255,255,0.1);"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;">
+      <button class="btn btn-outline" onclick="document.getElementById('interviewModal').style.display='none'">取消</button>
+      <button class="btn btn-accent" onclick="document.getElementById('interviewModal').style.display='none'">确认安排</button>
+    </div>
+  </div>
+</div>
+`,
+
+'b-offer': () => `
+<div class="page-head"><h1>Offer 管理</h1><p>管理录用流程与 Offer 发放</p></div>
+<div class="card" style="margin-bottom:20px;"><div class="card-title">HC 概览</div>
+  <div class="hc-bar"><div class="hc-item"><div class="hc-item-val">24</div><div class="hc-item-lbl">总 HC</div></div><div class="hc-item"><div class="hc-item-val" style="color:#059669;">12</div><div class="hc-item-lbl">已确认</div></div><div class="hc-item"><div class="hc-item-val" style="color:#D97706;">8</div><div class="hc-item-lbl">预冻结</div></div><div class="hc-item"><div class="hc-item-val" style="color:var(--c-accent);">4</div><div class="hc-item-lbl">可用</div></div></div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><div style="font-size:16px;font-weight:700;">Offer 列表</div><button class="btn btn-accent">+ 发起 Offer</button></div>
+${[
+  ['王小明','高级前端工程师','25K/月','待确认','tag-warning','#4F46E5','#EEF2FF'],
+  ['李小红','Java 后端开发','30K/月','已确认','tag-success','#059669','#ECFDF5'],
+  ['赵大伟','产品经理','22K/月','已拒绝','tag-danger','#D97706','#FFF7ED'],
+].map(([n,j,sal,st,tag,ac,bg]) => `
+  <div class="of-card">
+    <div class="of-card-left">
+      <div class="of-card-avatar" style="background:${bg};color:${ac};">${n[0]}</div>
+      <div><div class="of-card-name">${n}</div><div class="of-card-detail">${j} - ${sal}</div></div>
+    </div>
+    <span class="tag ${tag}">${st}</span>
+    <div style="display:flex;gap:8px;">${st==='待确认'?'<button class="btn btn-accent btn-sm">催促确认</button><button class="btn btn-ghost btn-sm">撤回</button>':st==='已拒绝'?'<button class="btn btn-outline btn-sm">重新发起</button>':'<button class="btn btn-ghost btn-sm">查看详情</button>'}</div>
+  </div>
+`).join('')}
+`,
+
+'b-messages': () => `
+<div class="page-head"><h1>消息沟通</h1><p>与候选人实时沟通</p></div>
+<div class="chat-shell">
+  <div class="conv-list">${[
+    ['王小明','高级前端工程师','好的，面试时间定在...','5分钟前','#4F46E5','#EEF2FF'],
+    ['李小红','Java 后端','谢谢您的邀请，我确...','30分钟前','#059669','#ECFDF5'],
+    ['赵大伟','产品经理','我对薪资有一些疑问...','2小时前','#D97706','#FFF7ED'],
+  ].map(([n,j,pre,tm,ac,bg],i) => `
+    <div class="conv-item ${i===0?'active':''}">
+      <div class="conv-avatar" style="background:${bg};color:${ac};">${n[0]}</div>
+      <div class="conv-info"><div class="conv-name">${n}</div><div class="conv-preview">${pre}</div></div>
+      <div class="conv-time">${tm}</div>
+    </div>
+  `).join('')}</div>
+  <div class="chat-main">
+    <div class="chat-top"><div><div class="chat-top-name">王小明</div><div class="chat-top-sub">高级前端工程师</div></div><div style="display:flex;gap:8px;"><button class="btn btn-outline btn-sm">查看简历</button><button class="btn btn-accent btn-sm">邀约面试</button></div></div>
+    <div class="chat-msgs">
+      <div class="chat-bubble in">您好，我对高级前端工程师的岗位很感兴趣，想了解一下团队情况。</div>
+      <div class="chat-bubble out">你好！我们团队目前 12 人，负责公司核心业务前端开发。</div>
+      <div class="chat-bubble in">好的，那面试时间可以定在下周三下午吗？</div>
+    </div>
+    <div class="chat-input-row"><input class="input" placeholder="输入消息..."><button class="btn btn-accent">发送</button></div>
+  </div>
+</div>
+`,
+
+'b-notifications': () => `
+<div class="page-head"><h1>消息通知</h1><p>招聘动态实时提醒</p></div>
+<div class="bento" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value">8</div><div class="stat-display-label">全部</div></div></div>
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value" style="color:#EF4444;">2</div><div class="stat-display-label">未读</div></div></div>
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value">3</div><div class="stat-display-label">今日</div></div></div>
+</div>
+<div class="table-wrap">
+  <div class="notif-item unread"><div class="notif-item-icon">&#128196;</div><div><div class="notif-item-title">王小明投递了高级前端工程师</div><div class="notif-item-time">5分钟前</div></div></div>
+  <div class="notif-item unread"><div class="notif-item-icon">&#10003;</div><div><div class="notif-item-title">李小红的面试评估已提交</div><div class="notif-item-time">30分钟前</div></div></div>
+  <div class="notif-item"><div class="notif-item-icon">&#128197;</div><div><div class="notif-item-title">明天有 3 场面试安排</div><div class="notif-item-time">2小时前</div></div></div>
+</div>
+`,
+
+'b-company': () => `
+<div class="page-head"><h1>公司管理</h1><p>管理企业信息与成员</p></div>
+<div class="nav-tabs"><button class="nav-tab active">公司信息</button><button class="nav-tab">成员管理</button></div>
+<div class="grid-2">
+  <div class="card"><div class="card-title">基本信息</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+      <div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;font-weight:650;margin-bottom:4px;">公司名称</div><div style="font-size:14px;font-weight:550;">阿里巴巴集团</div></div>
+      <div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;font-weight:650;margin-bottom:4px;">行业</div><div style="font-size:14px;font-weight:550;">互联网/科技</div></div>
+      <div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;font-weight:650;margin-bottom:4px;">规模</div><div style="font-size:14px;font-weight:550;">10000 人以上</div></div>
+      <div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;font-weight:650;margin-bottom:4px;">所在地</div><div style="font-size:14px;font-weight:550;">杭州</div></div>
+    </div>
+    <div style="margin-top:18px;display:flex;gap:10px;"><button class="btn btn-accent">保存修改</button><button class="btn btn-outline">取消</button></div>
+  </div>
+  <div class="card"><div class="card-title">邀请码</div>
+    <div style="background:var(--bg-subtle);padding:16px 20px;border-radius:12px;font-family:var(--font-mono);font-size:17px;text-align:center;letter-spacing:2px;font-weight:750;margin-bottom:14px;">LINGXI-2026-ALBB</div>
+    <button class="btn btn-outline" style="width:100%;">刷新邀请码</button>
+  </div>
+</div>
+<div class="card" style="margin-top:18px;"><div class="card-title">企业成员</div>
+  ${[
+    ['李 HR','HR 管理员','#4F46E5','#EEF2FF'],
+    ['张面试官','面试官','#059669','#ECFDF5'],
+    ['王面试官','面试官','#D97706','#FFF7ED'],
+    ['赵助理','HR','#DB2777','#FDF2F8'],
+  ].map(([n,r,ac,bg]) => `
+    <div class="member-row">
+      <div class="member-avatar" style="background:${bg};color:${ac};">${n[0]}</div>
+      <div class="member-info"><div class="member-name">${n}</div><div class="member-role">${r}</div></div>
+      <div style="display:flex;gap:8px;"><button class="btn btn-ghost btn-sm">编辑</button><button class="btn btn-ghost btn-sm" style="color:#DC2626;">移除</button></div>
+    </div>
+  `).join('')}
+</div>
+`,
+
+'b-profile': () => `
+<div class="page-head"><h1>个人中心</h1><p>管理你的账号与偏好</p></div>
+<div class="profile-card">
+  <div class="profile-avatar-lg" style="background:linear-gradient(135deg,#0D9488,#06B6D4);">李</div>
+  <div style="flex:1;"><div class="profile-name">李 HR</div><div class="profile-desc">HR 管理员 - 阿里巴巴集团</div></div>
+</div>
+<div class="card" style="margin-bottom:18px;"><div class="card-title">账号信息</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+    <div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;font-weight:650;margin-bottom:4px;">姓名</div><div style="font-size:14px;font-weight:550;">李 HR</div></div>
+    <div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;font-weight:650;margin-bottom:4px;">手机号</div><div style="font-size:14px;font-weight:550;">138****8888</div></div>
+    <div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;font-weight:650;margin-bottom:4px;">邮箱</div><div style="font-size:14px;font-weight:550;">lihr@alibaba.com</div></div>
+    <div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;font-weight:650;margin-bottom:4px;">职位</div><div style="font-size:14px;font-weight:550;">HR 管理员</div></div>
+  </div>
+  <button class="btn btn-outline" style="margin-top:16px;">修改密码</button>
+</div>
+<button class="btn btn-ghost" style="color:#DC2626;width:100%;padding:14px;font-size:15px;">退出登录</button>
+`,
+
+// ===== A 端 =====
+'a-dashboard': () => `
+<div class="page-head"><h1>数据看板</h1><p>平台核心运营数据</p></div>
+<div class="bento">
+  <div class="bento-cell"><div class="stat-icon">&#128101;</div><div class="stat-display"><div class="stat-display-value">12,847</div><div class="stat-display-label">注册用户</div><div class="stat-display-change up">+234 本周</div></div></div>
+  <div class="bento-cell"><div class="stat-icon">&#127970;</div><div class="stat-display"><div class="stat-display-value">326</div><div class="stat-display-label">认证企业</div><div class="stat-display-change up">+12 本周</div></div></div>
+  <div class="bento-cell"><div class="stat-icon">&#128196;</div><div class="stat-display"><div class="stat-display-value">2,156</div><div class="stat-display-label">在招岗位</div><div class="stat-display-change up">+89 本周</div></div></div>
+  <div class="bento-cell"><div class="stat-icon">&#128202;</div><div class="stat-display"><div class="stat-display-value">48,392</div><div class="stat-display-label">累计投递</div><div class="stat-display-change up">+1,203 本周</div></div></div>
+</div>
+<div class="grid-2">
+  <div class="card"><div class="card-title">投递趋势</div><div class="chart-ph" style="height:200px;">投递趋势折线图 - AntV G2</div></div>
+  <div class="card"><div class="card-title">岗位类型分布</div><div class="chart-ph" style="height:200px;">岗位类型分布柱状图 - AntV G2</div></div>
+</div>
+<div class="card" style="margin-top:18px;"><div class="card-title">企业活跃度排行</div>
+  <table>
+    <thead><tr><th>排名</th><th>企业名称</th><th>在招岗位</th><th>本月投递</th><th>本月录用</th></tr></thead>
+    <tbody>${[
+      ['1','阿里巴巴','128','2,341','45'],['2','字节跳动','96','1,892','32'],['3','腾讯','87','1,654','28'],['4','美团','65','1,203','21'],['5','京东','54','987','18'],
+    ].map(r => `<tr><td style="font-weight:700;">${r[0]}</td><td class="cell-title">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('')}</tbody>
+  </table>
+</div>
+`,
+
+// ===== 面试官端 =====
+'i-interview': () => `
+<div class="page-head"><h1>我的面试</h1><p>即将进行和待评估的面试</p></div>
+<div class="bento" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value">3</div><div class="stat-display-label">今日面试</div></div></div>
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value">8</div><div class="stat-display-label">本周面试</div></div></div>
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value" style="color:#D97706;">2</div><div class="stat-display-label">待评估</div></div></div>
+</div>
+<div class="nav-tabs"><button class="nav-tab active">即将进行 (5)</button><button class="nav-tab">待评估 (2)</button><button class="nav-tab">已完成 (15)</button></div>
+${[
+  ['王小明','高级前端工程师','2026-08-01 14:00','待面试','技术面','tag-warning','#4F46E5','#EEF2FF'],
+  ['李小红','Java 后端开发','2026-07-30 10:00','已确认','二面','tag-info','#059669','#ECFDF5'],
+  ['赵大伟','产品经理','2026-07-30 15:00','已完成','终面','tag-success','#D97706','#FFF7ED'],
+].map(([n,j,t,s,typ,tag,ac,bg]) => `
+  <div class="iv-card">
+    <div class="iv-card-left">
+      <div class="iv-card-avatar" style="background:${bg};color:${ac};">${n[0]}</div>
+      <div><div class="iv-card-name">${n}</div><div class="iv-card-job">${j} - ${typ}</div></div>
+    </div>
+    <div style="text-align:right;"><div class="iv-card-time">${t}</div><span class="tag ${tag}" style="margin-top:4px;">${s}</span></div>
+    <div style="display:flex;gap:8px;">${s==='已完成'?'<button class="btn btn-accent btn-sm">录入评估</button>':'<button class="btn btn-accent btn-sm">开始面试</button><button class="btn btn-outline btn-sm">查看简历</button>'}</div>
+  </div>
+`).join('')}
+`,
+
+'i-candidates': () => `
+<div class="page-head"><h1>候选人</h1><p>查看分配给你的候选人信息</p></div>
+<div class="card" style="margin-bottom:18px;"><div class="card-title" style="margin-bottom:14px;">筛选</div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <select class="select input-sm"><option>全部状态</option><option>面试中</option><option>待评估</option><option>已完成</option></select>
+    <input class="input input-sm" placeholder="搜索候选人姓名" style="width:200px;">
+    <button class="btn btn-accent btn-sm">搜索</button>
+  </div>
+</div>
+<div class="grid-3">
+  ${[
+    ['王小明','高级前端工程师','面试中','2026-08-01','#4F46E5','#EEF2FF'],
+    ['李小红','Java 后端开发','待评估','2026-07-30','#059669','#ECFDF5'],
+    ['赵大伟','产品经理','已完成','2026-07-28','#D97706','#FFF7ED'],
+    ['陈小芳','数据分析师','已完成','2026-07-25','#DB2777','#FDF2F8'],
+    ['刘建国','前端工程师','面试中','2026-08-02','#2563EB','#EFF6FF'],
+    ['孙美丽','UI 设计师','待评估','2026-07-31','#8B5CF6','#F5F0FF'],
+  ].map(([n,j,s,d,ac,bg]) => `
+    <div style="background:var(--bg-raised);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;transition:all 0.3s var(--ease-out);cursor:pointer;" onmouseenter="this.style.boxShadow='var(--shadow-md)';this.style.transform='translateY(-2px)'" onmouseleave="this.style.boxShadow='';this.style.transform=''">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <div style="width:44px;height:44px;border-radius:14px;background:${bg};color:${ac};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:750;flex-shrink:0;">${n[0]}</div>
+        <div><div style="font-size:14px;font-weight:650;">${n}</div><div style="font-size:12px;color:var(--text-secondary);">${j}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span class="tag ${s==='面试中'?'tag-info':s==='待评估'?'tag-warning':'tag-success'}">${s}</span>
+        <span style="font-size:12px;color:var(--text-tertiary);">${d}</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;"><button class="btn btn-accent btn-sm" style="flex:1;">查看简历</button><button class="btn btn-outline btn-sm">评估</button></div>
+    </div>
+  `).join('')}
+</div>
+`,
+
+'i-profile': () => `
+<div class="page-head"><h1>个人中心</h1><p>管理你的账号信息</p></div>
+<div class="profile-card">
+  <div class="profile-avatar-lg" style="background:linear-gradient(135deg,#B388FF,#7C4DFF);">面</div>
+  <div style="flex:1;"><div class="profile-name">张面试官</div><div class="profile-desc">技术总监 - 阿里巴巴集团</div></div>
+</div>
+<div class="card" style="margin-bottom:18px;"><div class="card-title">账号信息</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+    <div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;font-weight:650;margin-bottom:4px;">姓名</div><div style="font-size:14px;font-weight:550;">张面试官</div></div>
+    <div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;font-weight:650;margin-bottom:4px;">手机号</div><div style="font-size:14px;font-weight:550;">139****9999</div></div>
+    <div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;font-weight:650;margin-bottom:4px;">邮箱</div><div style="font-size:14px;font-weight:550;">zhangiv@alibaba.com</div></div>
+    <div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;font-weight:650;margin-bottom:4px;">职位</div><div style="font-size:14px;font-weight:550;">技术总监</div></div>
+  </div>
+  <button class="btn btn-outline" style="margin-top:16px;">修改密码</button>
+</div>
+<div class="card"><div class="card-title">面试统计</div>
+  <div class="hc-bar">
+    <div class="hc-item"><div class="hc-item-val">15</div><div class="hc-item-lbl">已完成面试</div></div>
+    <div class="hc-item"><div class="hc-item-val" style="color:#059669;">12</div><div class="hc-item-lbl">已评估</div></div>
+    <div class="hc-item"><div class="hc-item-val" style="color:#D97706;">2</div><div class="hc-item-lbl">待评估</div></div>
+    <div class="hc-item"><div class="hc-item-val" style="color:var(--c-accent);">92%</div><div class="hc-item-lbl">评估完成率</div></div>
+  </div>
+</div>
+<button class="btn btn-ghost" style="color:#DC2626;width:100%;padding:14px;margin-top:18px;font-size:15px;">退出登录</button>
+`,
+
+'a-audit': () => `
+<div class="page-head"><h1>企业认证审核</h1><p>审核企业提交的认证信息</p></div>
+<div class="bento" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value" style="color:#D97706;">12</div><div class="stat-display-label">待审核</div></div></div>
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value" style="color:#059669;">298</div><div class="stat-display-label">已通过</div></div></div>
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value" style="color:#DC2626;">16</div><div class="stat-display-label">已拒绝</div></div></div>
+  <div class="bento-cell"><div class="stat-display"><div class="stat-display-value">8</div><div class="stat-display-label">本周新增</div></div></div>
+</div>
+<div class="table-wrap">
+  <div class="table-toolbar"><select class="select input-sm"><option>全部状态</option><option>待审核</option><option>已通过</option><option>已拒绝</option></select><input class="input input-sm" placeholder="搜索企业名称" style="width:200px;"></div>
+  <table>
+    <thead><tr><th>企业名称</th><th>行业</th><th>规模</th><th>提交时间</th><th>状态</th><th>操作</th></tr></thead>
+    <tbody>${[
+      ['星辰科技有限公司','互联网/科技','100-500人','2026-07-29','待审核'],
+      ['远航教育集团','教育/培训','500-1000人','2026-07-28','待审核'],
+      ['绿叶医疗','医疗/健康','100-500人','2026-07-27','待审核'],
+    ].map(r => `<tr><td class="cell-title">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td><span class="tag tag-warning">${r[4]}</span></td><td><div style="display:flex;gap:6px;"><button class="btn btn-accent btn-xs">通过</button><button class="btn btn-outline btn-xs">详情</button><button class="btn btn-ghost btn-xs" style="color:#DC2626;">拒绝</button></div></td></tr>`).join('')}</tbody>
+  </table>
+</div>
+`,
+
+'a-enterprise': () => `
+<div class="page-head"><h1>企业管理</h1><p>查看和管理平台企业</p></div>
+<div class="table-wrap">
+  <div class="table-toolbar"><select class="select input-sm"><option>全部状态</option><option>已认证</option><option>待审核</option></select><input class="input input-sm" placeholder="搜索企业名称" style="width:200px;"><button class="btn btn-outline btn-sm">搜索</button></div>
+  <table>
+    <thead><tr><th>企业名称</th><th>行业</th><th>认证状态</th><th>HR 数量</th><th>在招岗位</th><th>操作</th></tr></thead>
+    <tbody>${[
+      ['阿里巴巴','互联网','已认证','5','128','tag-success'],
+      ['字节跳动','互联网','已认证','3','96','tag-success'],
+      ['星辰科技','互联网','待审核','1','0','tag-warning'],
+    ].map(r => `<tr><td class="cell-title">${r[0]}</td><td>${r[1]}</td><td><span class="tag ${r[5]}">${r[2]}</span></td><td>${r[3]}</td><td>${r[4]}</td><td><button class="btn btn-ghost btn-xs">详情</button></td></tr>`).join('')}</tbody>
+  </table>
+  <div class="pg"><span>共 326 条</span><div class="pg-btns"><button class="pg-btn">&larr;</button><button class="pg-btn active">1</button><button class="pg-btn">2</button><button class="pg-btn">&rarr;</button></div></div>
+</div>
+`,
+
+'a-hr': () => `
+<div class="page-head"><h1>HR 管理</h1><p>按企业管理 HR 账号</p></div>
+<div class="table-wrap">
+  <div class="table-toolbar"><select class="select input-sm"><option>全部企业</option><option>阿里巴巴</option><option>字节跳动</option></select><input class="input input-sm" placeholder="搜索 HR 姓名" style="width:180px;"></div>
+  <table>
+    <thead><tr><th>姓名</th><th>所属企业</th><th>职位</th><th>手机号</th><th>状态</th><th>操作</th></tr></thead>
+    <tbody>${[
+      ['李 HR','阿里巴巴','HR 管理员','138****8888','正常','tag-success'],
+      ['王 HR','字节跳动','招聘专员','139****7777','正常','tag-success'],
+      ['赵 HR','星辰科技','HR','136****6666','已禁用','tag-danger'],
+    ].map(r => `<tr><td class="cell-title">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td><span class="tag ${r[5]}">${r[4]}</span></td><td><div style="display:flex;gap:6px;">${r[4]==='正常'?'<button class="btn btn-ghost btn-xs" style="color:#DC2626;">禁用</button>':'<button class="btn btn-accent btn-xs">启用</button>'}<button class="btn btn-ghost btn-xs">详情</button></div></td></tr>`).join('')}</tbody>
+  </table>
+</div>
+`,
+
+'a-interviewer': () => `
+<div class="page-head"><h1>面试官管理</h1><p>按企业管理面试官账号</p></div>
+<div class="table-wrap">
+  <div class="table-toolbar"><select class="select input-sm"><option>全部企业</option></select><input class="input input-sm" placeholder="搜索面试官姓名" style="width:200px;"></div>
+  <table>
+    <thead><tr><th>姓名</th><th>所属企业</th><th>职位</th><th>已完成面试</th><th>状态</th><th>操作</th></tr></thead>
+    <tbody>${[
+      ['张面试官','阿里巴巴','技术总监','12','正常','tag-success'],
+      ['王面试官','字节跳动','前端负责人','8','正常','tag-success'],
+      ['陈面试官','腾讯','技术经理','5','已禁用','tag-danger'],
+    ].map(r => `<tr><td class="cell-title">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td><span class="tag ${r[5]}">${r[4]}</span></td><td>${r[4]==='正常'?'<button class="btn btn-ghost btn-xs" style="color:#DC2626;">禁用</button>':'<button class="btn btn-accent btn-xs">启用</button>'}</td></tr>`).join('')}</tbody>
+  </table>
+</div>
+`,
+
+'a-job': () => `
+<div class="page-head"><h1>岗位管理</h1><p>监管平台所有岗位</p></div>
+<div class="table-wrap">
+  <div class="table-toolbar"><select class="select input-sm"><option>全部企业</option></select><select class="select input-sm"><option>全部状态</option><option>发布中</option><option>已暂停</option><option>已下线</option></select><input class="input input-sm" placeholder="搜索岗位名称" style="width:180px;"></div>
+  <table>
+    <thead><tr><th>岗位名称</th><th>所属企业</th><th>城市</th><th>状态</th><th>投递数</th><th>操作</th></tr></thead>
+    <tbody>${[
+      ['高级前端工程师','阿里巴巴','杭州','发布中','234','tag-success'],
+      ['Java 后端开发','字节跳动','北京','发布中','189','tag-success'],
+      ['UI 设计师','腾讯','深圳','已暂停','56','tag-warning'],
+      ['测试工程师','美团','上海','发布中','123','tag-success'],
+    ].map(r => `<tr><td class="cell-title">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td><span class="tag ${r[5]}">${r[3]}</span></td><td>${r[4]}</td><td><div style="display:flex;gap:6px;"><button class="btn btn-ghost btn-xs">详情</button>${r[3]!=='已下线'?'<button class="btn btn-ghost btn-xs" style="color:#DC2626;">下架</button>':''}</div></td></tr>`).join('')}</tbody>
+  </table>
+  <div class="pg"><span>共 2,156 条</span><div class="pg-btns"><button class="pg-btn">&larr;</button><button class="pg-btn active">1</button><button class="pg-btn">2</button><button class="pg-btn">&rarr;</button></div></div>
+</div>
+`,
+
+'a-candidate': () => `
+<div class="page-head"><h1>求职者管理</h1><p>管理平台求职者</p></div>
+<div class="table-wrap">
+  <div class="table-toolbar"><select class="select input-sm"><option>全部状态</option></select><input class="input input-sm" placeholder="搜索求职者姓名" style="width:200px;"></div>
+  <table>
+    <thead><tr><th>姓名</th><th>城市</th><th>求职状态</th><th>简历数</th><th>投递数</th><th>注册时间</th><th>操作</th></tr></thead>
+    <tbody>${[
+      ['张三','杭州','求职中','2','12','2026-07-20','tag-success'],
+      ['李四','北京','在职看机会','1','5','2026-07-18','tag-warning'],
+      ['王五','深圳','暂不考虑','1','3','2026-07-15','tag-neutral'],
+    ].map(r => `<tr><td class="cell-title">${r[0]}</td><td>${r[1]}</td><td><span class="tag ${r[6]}">${r[2]}</span></td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td><div style="display:flex;gap:6px;"><button class="btn btn-ghost btn-xs">详情</button><button class="btn btn-ghost btn-xs" style="color:#DC2626;">禁用</button></div></td></tr>`).join('')}</tbody>
+  </table>
+</div>
+`,
+
+'a-announcement': () => `
+<div class="page-head"><h1>系统公告</h1><p>发布和管理平台公告</p></div>
+<div style="margin-bottom:16px;"><button class="btn btn-accent">+ 发布公告</button></div>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>标题</th><th>类型</th><th>状态</th><th>发布时间</th><th>操作</th></tr></thead>
+    <tbody>${[
+      ['系统维护通知','系统通知','已发布','2026-07-29','tag-success'],
+      ['新功能上线 - AI 简历诊断','功能更新','已发布','2026-07-25','tag-success'],
+      ['春节放假安排','其他','草稿','-','tag-neutral'],
+    ].map(r => `<tr><td class="cell-title">${r[0]}</td><td>${r[1]}</td><td><span class="tag ${r[4]}">${r[2]}</span></td><td>${r[3]}</td><td><div style="display:flex;gap:6px;"><button class="btn btn-ghost btn-xs">编辑</button>${r[2]==='已发布'?'<button class="btn btn-ghost btn-xs" style="color:#D97706;">撤回</button>':'<button class="btn btn-accent btn-xs">发布</button>'}</div></td></tr>`).join('')}</tbody>
+  </table>
+</div>
+`,
+
+'a-auditlog': () => `
+<div class="page-head"><h1>操作日志</h1><p>平台操作审计记录</p></div>
+<div class="table-wrap">
+  <div class="table-toolbar"><select class="select input-sm"><option>全部类型</option></select><input class="input input-sm" type="date" style="width:140px;"><span style="color:var(--text-tertiary);margin:0 4px;">至</span><input class="input input-sm" type="date" style="width:140px;"><button class="btn btn-outline btn-sm">导出日志</button></div>
+  <table>
+    <thead><tr><th>操作人</th><th>操作类型</th><th>描述</th><th>IP</th><th>时间</th></tr></thead>
+    <tbody>${[
+      ['管理员','企业审核','通过星辰科技企业认证','192.168.1.100','2026-07-29 14:30'],
+      ['李 HR','岗位发布','发布高级前端工程师岗位','192.168.1.50','2026-07-29 11:20'],
+      ['管理员','用户管理','禁用用户 王五','192.168.1.100','2026-07-29 09:15'],
+    ].map(r => `<tr><td class="cell-title">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td style="font-family:var(--font-mono);font-size:12px;">${r[3]}</td><td>${r[4]}</td></tr>`).join('')}</tbody>
+  </table>
+  <div class="pg"><span>共 1,248 条</span><div class="pg-btns"><button class="pg-btn">&larr;</button><button class="pg-btn active">1</button><button class="pg-btn">2</button><button class="pg-btn">&rarr;</button></div></div>
+</div>
+`,
+
+'a-config': () => `
+<div class="page-head"><h1>系统配置</h1><p>平台运行参数配置</p></div>
+<div class="card"><div class="card-title">基础配置</div>
+  <div class="setting-row"><span class="setting-label">平台名称</span><span class="setting-value">灵犀互聘</span></div>
+  <div class="setting-row"><span class="setting-label">注册开关</span><div class="toggle on"></div></div>
+  <div class="setting-row"><span class="setting-label">AI 助手开关</span><div class="toggle on"></div></div>
+  <div class="setting-row"><span class="setting-label">最大简历上传数</span><span class="setting-value">5 份</span></div>
+  <div class="setting-row"><span class="setting-label">验证码有效期</span><span class="setting-value">5 分钟</span></div>
+  <div style="margin-top:20px;"><button class="btn btn-accent">保存配置</button></div>
+</div>
+`,
+};
+
+// ===== Render =====
+function getBKey() { return bRole === 'interviewer' ? 'b_interviewer' : 'b_hr'; }
+
+function renderPage(id) {
+  const el = document.getElementById('pageContent');
+  let end, tabsHtml;
+
+  // Determine end and role for menu
+  if (id.startsWith('i-')) {
+    end = 'b';
+    bRole = 'interviewer';
+    tabsHtml = menu.b_interviewer.map(p =>
+      `<button class="nav-tab${p.id === id ? ' active' : ''}" data-page="${p.id}">${p.label}</button>`
+    ).join('');
+  } else if (id.startsWith('b-')) {
+    end = 'b';
+    bRole = 'hr';
+    tabsHtml = menu.b_hr.map(p =>
+      `<button class="nav-tab${p.id === id ? ' active' : ''}" data-page="${p.id}">${p.label}</button>`
+    ).join('');
+  } else if (id.startsWith('c-')) {
+    end = 'c';
+    tabsHtml = menu.c.map(p =>
+      `<button class="nav-tab${p.id === id ? ' active' : ''}" data-page="${p.id}">${p.label}</button>`
+    ).join('');
+  } else {
+    end = 'a';
+    tabsHtml = menu.a.map(p =>
+      `<button class="nav-tab${p.id === id ? ' active' : ''}" data-page="${p.id}">${p.label}</button>`
+    ).join('');
+  }
+
+  if (T[id]) {
+    el.innerHTML = `<nav class="nav-tabs" id="navTabs">${tabsHtml}</nav><div class="page-section active">${T[id]()}</div>`;
+  } else {
+    el.innerHTML = `<nav class="nav-tabs" id="navTabs">${tabsHtml}</nav><div class="page-section active"><div class="empty"><div class="empty-icon">&#128196;</div><div class="empty-text">页面开发中</div></div></div>`;
+  }
+
+  el.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', (e) => {
+      e.preventDefault();
+      navTo(tab.dataset.page);
+    });
+  });
+}
+
+function navTo(pageId) {
+  curPage = pageId;
+  const end = pageId.startsWith('c-') ? 'c' : pageId.startsWith('b-')||pageId.startsWith('i-') ? 'b' : 'a';
+
+  // Update B端 role
+  if (pageId.startsWith('i-')) bRole = 'interviewer';
+  else if (pageId.startsWith('b-')) bRole = 'hr';
+
+  if (end !== curEnd) {
+    curEnd = end;
+  }
+  updateEndSwitcher();
+  document.body.className = curEnd + '-mode' + (bRole === 'interviewer' ? ' interviewer-role' : '');
+  document.getElementById('topAvatar').textContent = bRole === 'interviewer' ? avatars.i : avatars[curEnd];
+  renderPage(pageId);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateEndSwitcher() {
+  document.querySelectorAll('.end-switch').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.end === curEnd);
+  });
+  // Show/hide B端 role switcher
+  const divider = document.getElementById('roleDivider');
+  const hrBtn = document.getElementById('roleHR');
+  const intBtn = document.getElementById('roleInt');
+  const showRole = curEnd === 'b';
+  divider.style.display = showRole ? '' : 'none';
+  hrBtn.style.display = showRole ? '' : 'none';
+  intBtn.style.display = showRole ? '' : 'none';
+  hrBtn.classList.toggle('active', bRole === 'hr');
+  intBtn.classList.toggle('active', bRole === 'interviewer');
+
+  document.body.className = curEnd + '-mode' + (bRole === 'interviewer' ? ' interviewer-role' : '');
+  document.getElementById('topAvatar').textContent = bRole === 'interviewer' ? avatars.i : avatars[curEnd];
+}
+
+// ===== Init =====
+document.getElementById('endSwitcher').addEventListener('click', (e) => {
+  // Handle role switch clicks
+  const roleBtn = e.target.closest('.role-switch');
+  if (roleBtn) {
+    const role = roleBtn.dataset.role;
+    if (role === bRole) return;
+    bRole = role;
+    curPage = role === 'interviewer' ? 'i-interview' : 'b-dashboard';
+    updateEndSwitcher();
+    renderPage(curPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  // Handle end switch clicks
+  const btn = e.target.closest('.end-switch');
+  if (!btn) return;
+  const end = btn.dataset.end;
+  if (end === curEnd) return;
+  curEnd = end;
+  bRole = 'hr'; // reset to HR when switching ends
+  curPage = defaults[end];
+  updateEndSwitcher();
+  renderPage(curPage);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// Topbar scroll effect
+window.addEventListener('scroll', () => {
+  document.getElementById('topbar').classList.toggle('scrolled', window.scrollY > 20);
+}, { passive: true });
+
+// Initial
+renderPage('c-home');
+</script>
+</body>
+</html>

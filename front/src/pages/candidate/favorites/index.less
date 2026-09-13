@@ -1,0 +1,175 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 入场动画 */
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .grid {
+    > * {
+      animation: fadeInScale 0.4s var(--ease-out) both;
+    }
+    > *:nth-child(1) { animation-delay: 0.05s; }
+    > *:nth-child(2) { animation-delay: 0.1s; }
+    > *:nth-child(3) { animation-delay: 0.15s; }
+    > *:nth-child(4) { animation-delay: 0.2s; }
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.emptyIcon {
+  font-size: 56px;
+  color: var(--border);
+  margin-bottom: 16px;
+}
+
+.emptyHint {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-top: 8px;
+}
+
+.goJobBtn {
+  margin-top: 20px;
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600 !important;
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+
+  &:hover {
+    background: var(--accent-2) !important;
+    border-color: var(--accent-2) !important;
+  }
+}
+
+/* 收藏卡片 */
+.favCard {
+  position: relative;
+  background: var(--white);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s var(--ease-out);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  /* 装饰性渐变背景 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-out);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+}
+
+.clickable {
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-4px);
+    border-color: rgba(255, 107, 107, 0.15);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  &:active {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-card-active);
+  }
+}
+
+.favHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.favTitle {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-title);
+  color: var(--text);
+  letter-spacing: var(--tracking-cn);
+}
+
+.favCompany {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.favSalary {
+  font-size: 17px;
+  font-weight: 700;
+  color: #e54d3d;
+  font-family: var(--font-mono);
+}
+
+.favMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.favMetaItem {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 3px 10px;
+  background: var(--bg);
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.favFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.favTime {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 24px;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

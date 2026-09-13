@@ -1,0 +1,256 @@
+.page {
+  padding: 8px 0 40px;
+}
+
+.outlineBtn {
+  border-radius: var(--radius-sm);
+  font-weight: 550;
+  border-color: var(--border);
+  color: var(--text-secondary);
+  transition: all 0.2s var(--ease-out);
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+/* Stat Row */
+.statRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.statCard {
+  flex: 1;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 8px;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--accent);
+  }
+}
+
+.statUnread {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.statCardActive {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  letter-spacing: -1px;
+  color: var(--text);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin-top: 6px;
+  white-space: nowrap;
+}
+
+/* Card */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+
+  :global(.ant-card-body) {
+    padding: 0;
+  }
+}
+
+/* Filter Bar */
+.filterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabs {
+  :global(.ant-tabs-nav) {
+    margin-bottom: 0;
+
+    &::before {
+      border-bottom: none;
+    }
+  }
+
+  :global(.ant-tabs-tab) {
+    font-size: 14px;
+    font-weight: 550;
+    color: var(--text-secondary);
+    font-family: var(--font-title);
+    padding: 8px 16px;
+
+    &:hover {
+      color: var(--accent);
+    }
+  }
+
+  :global(.ant-tabs-tab-active .ant-tabs-tab-btn) {
+    color: var(--accent) !important;
+  }
+
+  :global(.ant-tabs-ink-bar) {
+    background: var(--accent);
+  }
+}
+
+.typeSelect {
+  min-width: 140px;
+
+  :global(.ant-select-selector) {
+    border-radius: var(--radius-sm) !important;
+  }
+}
+
+/* Notification Item */
+.notifItem {
+  padding: 16px 24px !important;
+  border-bottom: 1px solid var(--border) !important;
+  transition: all 0.2s var(--ease-out);
+
+  &:hover {
+    background: var(--bg);
+  }
+
+  &:last-child {
+    border-bottom: none !important;
+  }
+}
+
+.notifUnread {
+  background: var(--accent-soft);
+
+  &:hover {
+    background: var(--accent-soft);
+  }
+}
+
+.notifIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.notifTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unreadDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.notifTypeLabel {
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text);
+  font-family: var(--font-title);
+}
+
+.notifTime {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  margin-left: auto;
+}
+
+.notifContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.notifTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.notifJobTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg);
+  color: var(--text-tertiary);
+}
+
+.actionBtn {
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+
+  &:hover {
+    color: var(--accent) !important;
+  }
+}
+
+.tabsWrapper {
+  padding: 12px 0;
+}
+
+.tabLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: var(--font-title);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+  border-top: 1px solid var(--border);
+}

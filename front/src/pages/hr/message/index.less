@@ -1,0 +1,26 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chatLayout {
+  display: flex;
+  gap: 0;
+  width: 100%;
+  height: calc(100vh - 300px); // 原200px不够，PageHero+导航+padding约占300px
+  min-height: 400px;
+  background: var(--white, #fff);
+  border: 1px solid var(--border, #f0f0f0);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(0, 0, 0, 0.06));
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .chatLayout {
+    flex-direction: column;
+    height: calc(100vh - 180px);
+    min-height: auto;
+  }
+}

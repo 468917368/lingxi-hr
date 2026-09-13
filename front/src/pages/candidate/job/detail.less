@@ -1,0 +1,385 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 入场动画 */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .backBtn { animation: fadeInUp 0.35s var(--ease-out) both; }
+  .headerRow { animation: fadeInUp 0.4s var(--ease-out) 0.05s both; }
+  .content {
+    > * {
+      animation: fadeInUp 0.45s var(--ease-out) both;
+    }
+    > *:nth-child(1) { animation-delay: 0.1s; }
+    > *:nth-child(2) { animation-delay: 0.15s; }
+  }
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 600;
+  font-family: var(--font-title);
+  border: none;
+  background: none;
+  padding: 0;
+  transition: color 0.2s var(--ease-out);
+
+  &:hover {
+    color: var(--accent);
+  }
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.titleArea {
+  flex: 1;
+  min-width: 0;
+}
+
+.jobTitle {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  font-family: var(--font-title);
+  letter-spacing: var(--tracking-cn);
+  margin-bottom: 8px;
+}
+
+.companyName {
+  font-size: 15px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 招聘负责人（次级信息层级，不与岗位标题竞争） */
+.creatorName {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+}
+
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+}
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+  font-family: var(--font-title);
+  letter-spacing: var(--tracking-cn);
+}
+
+.metaList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.metaLabel {
+  color: var(--text-tertiary);
+  min-width: 70px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.jdText {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.skillTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skillTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-title);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Match Panel */
+.matchPanel {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.matchScore {
+  font-size: 64px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.matchLabel {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.scoreBar {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--bg);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.scoreFill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.8s var(--ease-out);
+}
+
+.dimensionList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.dimensionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dimensionLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-width: 80px;
+}
+
+.dimensionBar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.dimensionFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s var(--ease-out);
+}
+
+.dimensionScore {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-mono);
+  min-width: 36px;
+  text-align: right;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  font-family: var(--font-title);
+  width: 100%;
+  letter-spacing: var(--tracking-cn);
+}
+
+.sectionTitleGreen {
+  color: #059669;
+}
+
+.sectionTitleRed {
+  color: #DC2626;
+}
+
+.list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.listItem {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding-left: 14px;
+  position: relative;
+  line-height: 1.5;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 7px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+}
+
+.listItemGreen::before {
+  background: #059669;
+}
+
+.listItemRed::before {
+  background: #DC2626;
+}
+
+.bottomActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* 缺失维度容器与标签 */
+.missingTagList {
+  margin-bottom: 12px;
+}
+
+.missingTag {
+  margin-bottom: 4px;
+}
+
+/* 参考信息标题（灰色） */
+.sectionTitleGray {
+  color: #999;
+}
+
+/* 参考信息文本 */
+.referenceText {
+  font-size: 12px;
+  color: #999;
+}
+
+.referenceItem {
+  margin-bottom: 4px;
+}
+
+/* 招聘中状态 Tag */
+.statusTag {
+  border-radius: var(--radius-sm);
+}
+
+/* 底部操作按钮（布局） */
+.actionBtn {
+  flex: 1;
+  height: 48px;
+  border-radius: var(--radius-md);
+  font-weight: 650;
+}
+
+/* 咨询HR按钮（蓝色） */
+.consultBtn {
+  flex: 1;
+  height: 48px;
+  border-radius: var(--radius-md);
+  font-weight: 650;
+  background: #3B82F6 !important;
+  border-color: #3B82F6 !important;
+  color: #fff !important;
+
+  &:hover {
+    background: #2563EB !important;
+    border-color: #2563EB !important;
+  }
+}
+
+/* 收藏按钮（右操作区顶部，accent 主色） */
+.favBtn {
+  height: 48px;
+  border-radius: var(--radius-md);
+  font-weight: 650;
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+
+  &:hover {
+    background: var(--accent-2) !important;
+    border-color: var(--accent-2) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}

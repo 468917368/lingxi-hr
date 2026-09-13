@@ -1,0 +1,200 @@
+.modal {
+  :global(.ant-modal-content) {
+    border-radius: 16px;
+  }
+}
+
+.prepWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 4px;
+}
+
+.recordInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recordName {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.recordJob {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.difficultyRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.difficultyLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.difficultySelect {
+  width: 160px;
+}
+
+.startBtn {
+  align-self: flex-start;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  color: #fff !important;
+
+  /* 面试官端 --accent 为浅天蓝，白字对比度低；固定深蓝保证可读 */
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 35%) !important;
+
+  &:hover {
+    background: #1d4ed8 !important;
+    border-color: #1d4ed8 !important;
+  }
+}
+
+.prepTip {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.6;
+}
+
+.genWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 8px;
+}
+
+.genTitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.genSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.genStep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.genStepIcon {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.genStepText {
+  line-height: 1.5;
+}
+
+.failWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 8px;
+}
+
+.failText {
+  color: #d9534f;
+  font-size: 14px;
+}
+
+.successWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modeBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--accent-soft);
+  border-radius: 10px;
+}
+
+.modeHint {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.questionList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.questionCard {
+  border: 1px solid var(--border, #eee);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #fff;
+}
+
+.questionHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.questionIndex {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.questionContent {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-primary, #333);
+  white-space: pre-wrap;
+}
+
+.collapseText {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+
+/* 阶段6.3：申请入库按钮（卡片 header 尾部，右对齐） */
+.submitBtn {
+  margin-left: auto !important;
+
+  /* 面试官端 --accent 为浅天蓝，文字偏淡；固定深蓝 + 加粗保证可读 */
+  color: #2563eb !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+
+  &:hover {
+    color: #1d4ed8 !important;
+  }
+
+  &:disabled {
+    color: var(--text-tertiary) !important;
+  }
+}

@@ -1,0 +1,347 @@
+.page {
+  padding: 8px 0 40px;
+}
+
+.backBtn {
+  border-radius: var(--radius-sm);
+  font-weight: 550;
+  border-color: var(--border);
+  color: var(--text-secondary);
+  transition: all 0.2s var(--ease-out);
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+/* Card */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+
+  :global(.ant-card-body) {
+    padding: 24px;
+  }
+}
+
+/* Section Title */
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-title);
+  letter-spacing: -0.3px;
+  color: var(--text);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 薪资标题行：标题左、面议开关右 */
+.salaryTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+
+  /* 行内 .sectionTitle 不再单独带下边距，由外层 .salaryTitleRow 统一控制 */
+  :global(.ant-form-item) {
+    margin-bottom: 0;
+  }
+}
+
+.aiIcon {
+  color: var(--accent);
+  font-size: 18px;
+}
+
+/* Form Inputs */
+.formInput {
+  border-radius: var(--radius-sm);
+
+  &:hover,
+  &:focus {
+    border-color: var(--accent);
+  }
+
+  &:focus-within {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px var(--accent-shadow) !important;
+  }
+}
+
+.formSelect {
+  :global(.ant-select-selector) {
+    border-radius: var(--radius-sm) !important;
+  }
+
+  &:hover :global(.ant-select-selector) {
+    border-color: var(--accent) !important;
+  }
+
+  &:global(.ant-select-focused) :global(.ant-select-selector) {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px var(--accent-shadow) !important;
+  }
+}
+
+.formInputFull {
+  width: 100%;
+  border-radius: var(--radius-sm);
+
+  &:hover,
+  &:focus {
+    border-color: var(--accent);
+  }
+
+  &:focus-within {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px var(--accent-shadow) !important;
+  }
+}
+
+.formTextarea {
+  border-radius: var(--radius-sm);
+
+  &:hover,
+  &:focus {
+    border-color: var(--accent);
+  }
+
+  &:focus-within {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px var(--accent-shadow) !important;
+  }
+}
+
+/* Tag List */
+.tagList {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.profileTag {
+  border-radius: 20px;
+  border: none;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 12px;
+  font-family: var(--font-title);
+  padding: 4px 12px;
+  margin: 0;
+}
+
+.profileTagSoft {
+  border-radius: 20px;
+  border: none;
+  background: #FFF7ED;
+  color: #EA580C;
+  font-weight: 600;
+  font-size: 12px;
+  font-family: var(--font-title);
+  padding: 4px 12px;
+  margin: 0;
+}
+
+.addTagBtn {
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--text-tertiary);
+  border-style: dashed;
+  border-color: var(--border);
+  height: 30px;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+/* Action Bar */
+.actionBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding: 20px 0;
+}
+
+.ghostBtn {
+  border-radius: var(--radius-sm);
+  font-weight: 550;
+  border: none;
+  color: var(--text-secondary);
+  background: var(--bg);
+
+  &:hover {
+    color: var(--text);
+    background: var(--border);
+  }
+}
+
+.outlineBtn {
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  border-color: var(--border);
+  color: var(--text-secondary);
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+.accentBtn {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600 !important;
+  font-family: var(--font-title) !important;
+  height: 40px !important;
+  padding: 0 24px !important;
+  transition: all 0.25s var(--ease-bounce) !important;
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+
+  &:hover {
+    transform: scale(1.03) !important;
+    background: var(--accent-2) !important;
+    border-color: var(--accent-2) !important;
+  }
+}
+
+/* AI Button */
+.aiBtn {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600 !important;
+  font-family: var(--font-title) !important;
+  height: 40px !important;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
+  border: none !important;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+/* Parsed Result */
+.parsedResult {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.parsedHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text);
+  font-family: var(--font-title);
+  margin-bottom: 16px;
+}
+
+.applyBtn {
+  margin-left: auto;
+  color: var(--accent) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+}
+
+.parsedSection {
+  margin-bottom: 14px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.parsedLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.parsedTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-title);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.parsedTagSoft {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-title);
+  background: #FFF7ED;
+  color: #EA580C;
+}
+
+.parsedText {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* 画像卡片与上方卡片间距 */
+.cardGap {
+  margin-top: 20px;
+}
+
+/* AI 解析按钮/解析中按钮上间距 */
+.aiBtnGap {
+  margin-top: 12px;
+}
+
+/* 解析成功图标 */
+.successIcon {
+  color: #059669;
+}
+
+/* 解析警告容器 */
+.warningsBox {
+  margin-bottom: 8px;
+}
+
+/* 单条警告 */
+.warningItem {
+  color: #b45309;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* AI 推断角标 */
+.aiHint {
+  font-size: 10px;
+  color: #999;
+}
+
+/* 解析失败提示容器 */
+.failedBox {
+  margin-top: 12px;
+}
+
+/* 表单选项加载失败 Alert 间距 */
+.alertBottom {
+  margin-bottom: 16px;
+}

@@ -1,0 +1,254 @@
+.page {
+  padding: 8px 0 40px;
+}
+
+.accentBtn {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600 !important;
+  font-family: var(--font-title) !important;
+  height: 40px !important;
+  padding: 0 20px !important;
+  transition: all 0.25s var(--ease-bounce) !important;
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+
+  &:hover {
+    transform: scale(1.03) !important;
+    background: var(--accent-2) !important;
+    border-color: var(--accent-2) !important;
+  }
+}
+
+/* Card wrapper */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* Filter Bar */
+.filterBar {
+  padding: 16px 24px 0;
+}
+
+.statusTabs {
+  :global(.ant-tabs-nav) {
+    margin-bottom: 0;
+
+    &::before {
+      border-bottom-color: var(--border);
+    }
+  }
+
+  :global(.ant-tabs-tab) {
+    font-size: 14px;
+    font-weight: 550;
+    color: var(--text-secondary);
+    font-family: var(--font-title);
+    padding: 8px 16px;
+
+    &:hover {
+      color: var(--accent);
+    }
+  }
+
+  :global(.ant-tabs-tab-active .ant-tabs-tab-btn) {
+    color: var(--accent) !important;
+  }
+
+  :global(.ant-tabs-ink-bar) {
+    background: var(--accent);
+  }
+}
+
+.searchRow {
+  display: flex;
+  gap: 12px;
+  padding: 16px 0;
+  align-items: center;
+}
+
+.searchInput {
+  max-width: 360px;
+  border-radius: var(--radius-sm) !important;
+
+  &:hover,
+  &:focus {
+    border-color: var(--accent) !important;
+  }
+
+  &:focus-within {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px var(--accent-shadow) !important;
+  }
+}
+
+.resetBtn {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 550 !important;
+  border-color: var(--border) !important;
+  color: var(--text-secondary) !important;
+  transition: all 0.2s var(--ease-out) !important;
+
+  &:hover {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+  }
+}
+
+/* Table */
+.table {
+  :global(.ant-table) {
+    font-size: 14px;
+  }
+
+  /* 首列（岗位名称）左侧留白：仅作用第一列 td/th，通过 padding 实现，不影响省略宽度计算 */
+  :global(.ant-table-thead > tr > th:first-child),
+  :global(.ant-table-tbody > tr > td:first-child) {
+    padding-left: 32px;
+  }
+
+  :global(.ant-table-thead > tr > th) {
+    background: var(--bg);
+    font-weight: 650;
+    font-family: var(--font-title);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-tertiary);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+  }
+
+  :global(.ant-table-tbody > tr > td) {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  :global(.ant-table-tbody > tr:hover > td) {
+    background: var(--accent-soft);
+  }
+}
+
+/* Job Title Cell */
+.jobTitleCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.jobTitle {
+  display: block;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text);
+  font-family: var(--font-title);
+
+  /* 单行省略：长标题不换行撑高表格行，完整名称悬停查看 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Skill Tags */
+.skillTags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.skillTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-title);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.skillTagMore {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg);
+  color: var(--text-tertiary);
+}
+
+/* HC Cell */
+.hcCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hcText {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.hcAvailable {
+  font-size: 12px;
+  font-weight: 700;
+  color: #059669;
+  font-family: var(--font-mono);
+}
+
+.hcFull {
+  color: #DC2626;
+}
+
+/* Time */
+.timeCell {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* Action Buttons */
+.actionBtn {
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 2px 4px !important;
+
+  &:hover {
+    color: var(--accent) !important;
+  }
+}
+
+.actionBtnPrimary {
+  color: var(--accent) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 2px 4px !important;
+
+  &:hover {
+    color: var(--accent-2) !important;
+  }
+}
+
+.actionBtnWarn {
+  color: #D97706 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 2px 4px !important;
+
+  &:hover {
+    color: #B45309 !important;
+  }
+}
+
+/* 加载错误态容器 */
+.errorContainer {
+  padding: 48px 0;
+  text-align: center;
+}

@@ -1,0 +1,274 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 800px;
+}
+
+/* 入场动画 */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .profileHeader { animation: fadeInScale 0.5s var(--ease-out) both; }
+  .funcSection { animation: fadeInUp 0.45s var(--ease-out) 0.1s both; }
+  .settingsSection { animation: fadeInUp 0.45s var(--ease-out) 0.15s both; }
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+.profileHeader {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 40px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.profileAvatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  font-family: var(--font-title);
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.profileInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.profileName {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text);
+  font-family: var(--font-title);
+  letter-spacing: var(--tracking-cn);
+  margin-bottom: 2px;
+}
+
+.profilePosition {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.profileMeta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.profileMetaItem {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  padding: 3px 10px;
+  background: var(--bg);
+  border-radius: 6px;
+}
+
+.profileDesired {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.desiredItem {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  background: var(--accent-soft);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.funcSection {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 4px 0;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.funcTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 16px 28px 8px;
+  font-family: var(--font-title);
+}
+
+.funcItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-out);
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background: var(--accent);
+    border-radius: 0 2px 2px 0;
+    transition: height 0.25s var(--ease-out);
+  }
+
+  &:hover {
+    background: rgba(255, 107, 107, 0.03);
+    padding-left: 32px;
+
+    &::before {
+      height: 20px;
+    }
+
+    .funcItemArrow {
+      transform: translateX(4px);
+      color: var(--accent);
+    }
+  }
+
+  /* 按下反馈 */
+  &:active {
+    background: rgba(255, 107, 107, 0.06);
+  }
+}
+
+.funcItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.funcItemIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: var(--accent-soft);
+}
+
+.funcItemLabel {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: var(--font-title);
+}
+
+.funcItemArrow {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  transition: transform 0.2s var(--ease-out);
+}
+
+.settingsSection {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+}
+
+.settingsTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 20px;
+  font-family: var(--font-title);
+}
+
+.settingItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.settingLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.settingDesc {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.statusSection {
+  padding-top: 8px;
+}
+
+.statusLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.logoutArea {
+  padding-top: 16px;
+  text-align: center;
+}

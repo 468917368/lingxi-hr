@@ -1,0 +1,486 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 入场动画 */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .uploadZone { animation: fadeInScale 0.5s var(--ease-out) both; }
+  .progressCard { animation: fadeInUp 0.45s var(--ease-out) 0.1s both; }
+  .previewCard { animation: fadeInUp 0.45s var(--ease-out) 0.15s both; }
+  .resumeList {
+    > * {
+      animation: fadeInUp 0.4s var(--ease-out) both;
+    }
+    > *:nth-child(1) { animation-delay: 0.1s; }
+    > *:nth-child(2) { animation-delay: 0.15s; }
+    > *:nth-child(3) { animation-delay: 0.2s; }
+  }
+}
+
+.uploadZone {
+  background: var(--white);
+  border: 2px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 48px;
+  text-align: center;
+  transition: all 0.3s var(--ease-out);
+  position: relative;
+  overflow: hidden;
+
+  /* 装饰性渐变背景 */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, var(--accent-soft), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-out);
+    pointer-events: none;
+  }
+
+  &:hover {
+    border-color: var(--accent);
+    border-style: solid;
+    background: rgba(255, 107, 107, 0.02);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card);
+
+    &::before {
+      opacity: 1;
+    }
+
+    .uploadIcon {
+      transform: scale(1.1) translateY(-4px);
+    }
+  }
+}
+
+.uploadIcon {
+  font-size: 48px;
+  color: var(--accent);
+  margin-bottom: 16px;
+  transition: transform 0.3s var(--ease-bounce);
+}
+
+.uploadTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  font-family: var(--font-title);
+}
+
+.uploadHint {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.progressCard {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+}
+
+.progressTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 20px;
+  font-family: var(--font-title);
+}
+
+.previewCard {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+}
+
+.previewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.previewTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-title);
+}
+
+.previewSuccess {
+  font-size: 14px;
+  color: #059669;
+  font-weight: 600;
+}
+
+.previewSection {
+  margin-bottom: 20px;
+}
+
+.previewSectionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+  font-family: var(--font-title);
+}
+
+.previewContent {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+}
+
+.previewTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.previewPoint {
+  padding: 4px 0;
+
+  & + & {
+    border-top: 1px dashed var(--border);
+  }
+}
+
+/* 解析中指示（替代 100% 进度条，避免误导） */
+.parsingIndicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Agent 实时进度（thinking 文本） */
+.agentHint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* 章节级实时进度（progress 事件：卡片骨架逐张出现） */
+/* 左 Steps / 右生长清单 并排布局 */
+.parseProgressBody {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.parseStepsCol {
+  flex: 0 0 240px;
+}
+
+.parseSectionsCol {
+  flex: 1;
+  min-width: 0;
+}
+
+.parseSectionsEmpty {
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.progressSectionsTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+
+  /* 计数高亮 */
+  .progressSectionsCount {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-weight: 700;
+  }
+}
+
+.progressSectionList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 骨架卡片：序号 + 标题 + 呼吸点 + shimmer 占位条（模拟"正在生长"） */
+.progressSectionItem {
+  position: relative;
+  padding: 14px 16px 14px 18px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  animation: cardGrowIn 0.35s var(--ease-out);
+
+  /* 左侧品牌色渐变条 */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--accent), var(--accent-2));
+    opacity: 0.65;
+  }
+}
+
+@keyframes cardGrowIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.progressSectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.progressSectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.progressSectionIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.progressSectionTag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+
+  /* 呼吸点动画 */
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: breatheDot 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes breatheDot {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.progressSectionBar {
+  height: 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+  background: linear-gradient(90deg, var(--bg) 25%, #E9EDF2 50%, var(--bg) 75%);
+  background-size: 200% 100%;
+  animation: progressShimmer 1.4s infinite;
+}
+
+@keyframes progressShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* 阶段2 评分生成中（不阻塞） */
+.scoreLoading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--bg);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+/* ===== 简历列表（管理页） ===== */
+
+.pageCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.listHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.listTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-title);
+  letter-spacing: var(--tracking-cn);
+}
+
+.resumeList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resumeItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s var(--ease-out);
+
+  &:hover {
+    border-color: var(--accent);
+  }
+}
+
+.resumeItemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.resumeItemName {
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.defaultBadge {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.resumeItemMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.resumeItemActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* 温和空状态 */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 40px 0;
+}
+
+.emptyIcon {
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.emptyTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-title);
+  letter-spacing: -0.2px;
+}
+
+.emptyDesc {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}

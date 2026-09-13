@@ -1,0 +1,396 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 入场动画 */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tabs { animation: fadeInUp 0.4s var(--ease-out) both; }
+  .appList {
+    > * {
+      animation: fadeInUp 0.45s var(--ease-out) both;
+    }
+    > *:nth-child(1) { animation-delay: 0.05s; }
+    > *:nth-child(2) { animation-delay: 0.1s; }
+    > *:nth-child(3) { animation-delay: 0.15s; }
+    > *:nth-child(4) { animation-delay: 0.2s; }
+    > *:nth-child(5) { animation-delay: 0.25s; }
+  }
+}
+
+.tabs {
+  margin-bottom: 4px;
+}
+
+.appList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.appCard {
+  background: var(--white);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: all 0.35s var(--ease-out);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+    opacity: 0;
+    transition: opacity 0.35s var(--ease-out);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  &:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-3px);
+    border-color: rgba(255, 107, 107, 0.12);
+
+    &::before { opacity: 1; }
+  }
+
+  /* 按下反馈 */
+  &:active {
+    transform: translateY(0) scale(0.998);
+    box-shadow: var(--shadow-card-active);
+  }
+}
+
+.appCardActive {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+
+  &::before { opacity: 1; }
+}
+
+/* OFFERED 待录用卡片：绿色高亮 + 渐变背景，候选人在列表即可感知"需要回应 Offer" */
+.appCardOffered {
+  border-color: #10B981;
+  box-shadow: 0 0 0 1px #10B981, 0 4px 16px rgba(16, 185, 129, 0.12);
+  background: linear-gradient(135deg, #F0FDF4 0%, var(--white) 60%);
+
+  &::before {
+    opacity: 1;
+    background: linear-gradient(90deg, #10B981, #34D399);
+  }
+}
+
+.appCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.appTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-title);
+  letter-spacing: var(--tracking-cn);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 城市标签（JOIN job_post.city_name） */
+.appCity {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+.appCompany {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.appMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.appTime {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.appLoading {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 列表加载更多 */
+.loadMoreWrap {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+}
+
+/* 居中区（加载 / 空状态 / 错误） */
+.pageCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 40px 0;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-title);
+  letter-spacing: var(--tracking-cn);
+}
+
+.emptyDesc {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+
+/* ===== 投递详情侧拉框（Drawer） ===== */
+
+/* 岗位信息加载中 */
+.drawerJobLoading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0;
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
+/* 岗位信息加载失败（不影响时间线展示） */
+.drawerJobError {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px 0;
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
+.drawerJobTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-title);
+  letter-spacing: var(--tracking-cn);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 岗位城市标签 */
+.drawerJobCity {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+.drawerJobCompany {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+/* 薪资 / 经验 / 学历 */
+.drawerJobMeta {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+}
+
+.drawerJobMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.drawerJobMetaLabel {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+.drawerJobMetaValue {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 650;
+}
+
+/* 分区标题（岗位描述 / 技能画像） */
+.drawerSectionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 20px;
+  margin-bottom: 8px;
+  font-family: var(--font-title);
+  letter-spacing: -0.2px;
+}
+
+/* JD 文本（折叠预览 / 展开全文） */
+.drawerJd {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+.drawerJdToggle {
+  padding-left: 0;
+  margin-top: 4px;
+}
+
+/* 技能标签 */
+.drawerSkills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* 行业经验说明 */
+.drawerIndustry {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+/* 岗位信息与投递进度分隔线 */
+.drawerDivider {
+  margin: 20px 0;
+  border-top: 1px solid var(--border);
+}
+
+/* 投递进度标题（含匹配度徽章） */
+.drawerTimelineTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+  font-family: var(--font-title);
+  letter-spacing: -0.2px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 匹配度徽章（模块A投递时快照，可能为空） */
+.drawerMatchScore {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  padding: 3px 10px;
+  background: var(--accent-soft);
+  border-radius: 8px;
+}
+
+/* 时间线条目 */
+.timelineStatus {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.timelineReason {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.timelineTime {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+/* 淘汰原因卡片（仅 REJECTED） */
+.drawerRejectCard {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-top: 20px;
+}
+
+.drawerRejectTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #DC2626;
+  margin-bottom: 6px;
+}
+
+.drawerRejectText {
+  font-size: 13px;
+  color: #7F1D1D;
+  line-height: 1.6;
+}
+
+/* 撤回投递操作区 */
+.drawerActions {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Offer 操作区（接受/拒绝按钮居中排列） */
+.drawerOfferActions {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}

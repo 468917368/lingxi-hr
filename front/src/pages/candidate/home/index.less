@@ -1,0 +1,347 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* 入场动画 */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .welcome { animation: fadeInUp 0.5s var(--ease-out) both; }
+  .bannerCard { animation: fadeInUp 0.5s var(--ease-out) 0.08s both; }
+  .aiPromo { animation: fadeInUp 0.5s var(--ease-out) 0.16s both; }
+  .bentoCard {
+    animation: fadeInScale 0.45s var(--ease-out) both;
+    &:nth-child(1) { animation-delay: 0.2s; }
+    &:nth-child(2) { animation-delay: 0.26s; }
+    &:nth-child(3) { animation-delay: 0.32s; }
+    &:nth-child(4) { animation-delay: 0.38s; }
+  }
+}
+
+/* Welcome Section */
+.welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.greeting {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: var(--tracking-cn);
+  color: var(--text);
+  font-family: var(--font-title);
+  line-height: 1.2;
+}
+
+.greetingAccent {
+  color: var(--accent);
+}
+
+.date {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+/* Banner Card */
+.bannerCard {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2), var(--accent-3));
+  border-radius: var(--radius-xl);
+  padding: 36px 40px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow: 0 8px 32px var(--accent-shadow);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s var(--ease-out);
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.bannerDecor1 {
+  position: absolute;
+  top: -60px;
+  right: -30px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.bannerDecor2 {
+  position: absolute;
+  bottom: -80px;
+  left: 20%;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+
+.bannerLeft {
+  position: relative;
+  z-index: 1;
+}
+
+.bannerTitle {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  font-family: var(--font-title);
+  letter-spacing: var(--tracking-cn);
+}
+
+.bannerDesc {
+  font-size: 14px;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.bannerBtn {
+  position: relative;
+  z-index: 1;
+  padding: 12px 28px;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  font-family: var(--font-title);
+  backdrop-filter: blur(4px);
+  transition: all 0.3s var(--ease-bounce);
+  letter-spacing: -0.1px;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* AI Promo Card */
+.aiPromo {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.03), rgba(255, 142, 114, 0.06));
+  border: 1px solid rgba(255, 107, 107, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  transition: all 0.3s var(--ease-out);
+  position: relative;
+  overflow: hidden;
+
+  /* 装饰性渐变背景 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 107, 107, 0.1), transparent 70%);
+    pointer-events: none;
+  }
+
+  &:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+    border-color: rgba(255, 107, 107, 0.25);
+  }
+}
+
+.aiIconWrap {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px var(--accent-shadow);
+}
+
+.aiInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.aiTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-title);
+  letter-spacing: var(--tracking-cn);
+  margin-bottom: 4px;
+}
+
+.aiDesc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.aiInput {
+  flex-shrink: 0;
+  width: 280px;
+}
+
+/* Bento Grid */
+.bentoGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.bentoCard {
+  background: var(--white);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: all 0.35s var(--ease-out);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+
+  /* 装饰性渐变背景 */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--card-bg-tint, transparent);
+    opacity: 0;
+    transition: opacity 0.35s var(--ease-out);
+    pointer-events: none;
+  }
+
+  /* 底部装饰光晕 */
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    right: -40px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-soft), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-out);
+    pointer-events: none;
+  }
+
+  &:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-4px);
+    border-color: rgba(255, 107, 107, 0.15);
+
+    &::before {
+      opacity: 1;
+    }
+
+    &::after {
+      opacity: 0.6;
+    }
+
+    .bentoIcon {
+      transform: scale(1.1) rotate(-5deg);
+    }
+
+    .bentoArrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* 按下反馈 */
+  &:active {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-card-active);
+  }
+}
+
+.bentoIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: all 0.35s var(--ease-bounce);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.bentoArrow {
+  margin-top: auto;
+  font-size: 14px;
+  color: var(--text-tertiary);
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: all 0.3s var(--ease-out);
+}
+
+.bentoLabel {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-title);
+  letter-spacing: var(--tracking-cn);
+}
+
+.bentoHint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bentoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .aiPromo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .aiInput {
+    width: 100%;
+  }
+
+  .bannerCard {
+    flex-direction: column;
+    text-align: center;
+  }
+}

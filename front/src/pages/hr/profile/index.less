@@ -1,0 +1,80 @@
+.page {
+  padding: 8px 0 40px;
+}
+
+/* Avatar Uploader */
+.avatarUploader {
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border: 2px dashed var(--border);
+
+  &:hover {
+    border-color: var(--accent);
+    opacity: 0.85;
+  }
+}
+
+.uploadHint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 8px;
+}
+
+/* Card */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+
+  :global(.ant-card-body) {
+    padding: 28px;
+  }
+}
+
+/* Tabs */
+.profileTabs {
+  :global(.ant-tabs-nav) {
+    margin-bottom: 20px;
+  }
+
+  :global(.ant-tabs-tab) {
+    font-weight: 600;
+    font-family: var(--font-title);
+    font-size: 14px;
+  }
+}
+
+/* Form Section */
+.formSection {
+  max-width: 480px;
+
+  :global(.ant-form-item-label > label) {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  :global(.ant-input-affix-wrapper) {
+    border-radius: var(--radius-sm);
+  }
+
+  :global(.ant-input-prefix) {
+    color: var(--text-tertiary);
+  }
+}
+
+.saveBtn {
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-family: var(--font-title);
+  height: 40px;
+  padding: 0 24px;
+  background: var(--accent);
+  border-color: var(--accent);
+
+  &:hover {
+    background: var(--accent-2) !important;
+    border-color: var(--accent-2) !important;
+  }
+}

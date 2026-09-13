@@ -1,0 +1,61 @@
+.page {
+  padding: 0;
+}
+
+.table {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+
+  :global {
+    .ant-table-thead > tr > th {
+      background: var(--bg);
+      font-family: var(--font-title);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .ant-table-tbody > tr > td {
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .ant-table-tbody > tr:hover > td {
+      background: var(--accent-soft);
+    }
+
+    .ant-table {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+  }
+}
+
+.actionGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modalForm {
+  :global {
+    .ant-form-item {
+      margin-bottom: 20px;
+    }
+
+    .ant-form-item-label > label {
+      font-family: var(--font-title);
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text);
+    }
+  }
+}

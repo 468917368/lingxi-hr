@@ -1,0 +1,372 @@
+.page {
+  padding: 8px 0 40px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  line-height: 1.2;
+  margin: 0;
+  font-family: var(--font-title);
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.backBtn {
+  border-radius: var(--radius-sm);
+  font-weight: 550;
+  border-color: var(--border);
+  color: var(--text-secondary);
+  transition: all 0.2s var(--ease-out);
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+.outlineBtn {
+  border-radius: var(--radius-sm);
+  font-weight: 550;
+  border-color: var(--border);
+  color: var(--text-secondary);
+  transition: all 0.2s var(--ease-out);
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+.dangerBtn {
+  border-radius: var(--radius-sm);
+  font-weight: 550;
+  border-color: #FECACA;
+  color: #DC2626;
+  transition: all 0.2s var(--ease-out);
+
+  &:hover {
+    border-color: #DC2626;
+    color: #DC2626;
+  }
+}
+
+/* Card */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+
+  :global(.ant-card-body) {
+    padding: 28px;
+  }
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-title);
+  letter-spacing: -0.3px;
+  color: var(--text);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--accent-soft);
+}
+
+/* Descriptions */
+.descriptions {
+  :global(.ant-descriptions-item-label) {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    font-weight: 600;
+  }
+
+  :global(.ant-descriptions-item-content) {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 550;
+  }
+}
+
+.salaryText {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+/* Skill Tags */
+.skillTags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.skillTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-title);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.softTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-title);
+  background: #FFF7ED;
+  color: #EA580C;
+}
+
+/* JD Text */
+.jdText {
+  white-space: pre-wrap;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  font-family: var(--font-body);
+  background: var(--bg);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  margin: 0;
+}
+
+/* HC Grid */
+.hcGrid {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  padding: 24px;
+}
+
+.hcItem {
+  flex: 1;
+  text-align: center;
+}
+
+.hcValue {
+  font-size: 36px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--text);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.hcZero .hcValue {
+  color: #DC2626;
+}
+
+.hcLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.hcDivider {
+  width: 1px;
+  height: 40px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.hcHint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
+/* Profile */
+.profileSection {
+  margin: 0;
+}
+
+.profileLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.profileText {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.profileList {
+  margin: 0;
+  padding-left: 18px;
+
+  li {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 2px;
+  }
+}
+
+/* 卡片间距 */
+.cardGap {
+  margin-top: 20px;
+}
+
+/* 提示/状态 Alert 间距 */
+.alertGap {
+  margin-top: 12px;
+}
+
+.alertBottom {
+  margin-bottom: 16px;
+}
+
+/* 返回列表按钮左侧间距 */
+.backBtnGap {
+  margin-left: 8px;
+}
+
+/* HC 明细信息图标 */
+.hcInfoIcon {
+  margin-left: 8px;
+  color: #999;
+}
+
+/* HC 数值颜色（已确认/预冻结） */
+.hcValueBlue {
+  color: #1677ff;
+}
+
+.hcValueOrange {
+  color: #faad14;
+}
+
+/* 技能标签角标 */
+.skillMeta {
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.aiHint {
+  font-size: 10px;
+  margin-left: 4px;
+  color: #999;
+}
+
+/* 画像分隔线间距 */
+.dividerGap {
+  margin: 16px 0;
+}
+
+/* 隐性要求项 */
+.hiddenItem {
+  margin-bottom: 8px;
+}
+
+/* ===== 状态历史 ===== */
+.historyTimeline {
+  margin-top: 4px;
+}
+
+.historyItem {
+  line-height: 1.5;
+}
+
+.historyLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.historyTransition {
+  font-family: var(--font-mono);
+}
+
+.historyTag {
+  border-radius: var(--radius-sm);
+  font-weight: 550;
+}
+
+.historyMeta {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.historyTime {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+/* 状态历史失败态 */
+.historyError {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.historyErrorText {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* 超出 50 条提示 */
+.historyLimitHint {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  font-size: 12px;
+  color: var(--text-tertiary);
+}

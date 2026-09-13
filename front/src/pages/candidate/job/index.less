@@ -1,0 +1,128 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 入场动画 */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .filterBar { animation: fadeInUp 0.45s var(--ease-out) both; }
+  .recommendBar { animation: fadeInUp 0.45s var(--ease-out) 0.05s both; }
+  .grid {
+    > * {
+      animation: fadeInScale 0.4s var(--ease-out) both;
+    }
+    > *:nth-child(1) { animation-delay: 0.1s; }
+    > *:nth-child(2) { animation-delay: 0.15s; }
+    > *:nth-child(3) { animation-delay: 0.2s; }
+    > *:nth-child(4) { animation-delay: 0.25s; }
+    > *:nth-child(5) { animation-delay: 0.3s; }
+    > *:nth-child(6) { animation-delay: 0.35s; }
+  }
+}
+
+.filterBar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filterSelect {
+  min-width: 180px;
+}
+
+/* 搜索框宽度 */
+.searchInput {
+  width: 320px;
+}
+
+/* 技能标签筛选宽度 */
+.skillTagSelect {
+  min-width: 240px;
+}
+
+.count {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+  padding: 20px 0;
+}
+
+/* 画像推荐模式提示条（无筛选 + 智能推荐） */
+.recommendBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--accent-soft);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.recommendTag {
+  flex-shrink: 0;
+  padding: 1px 8px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.recommendText {
+  margin-right: auto;
+}
+
+.guideLink {
+  color: var(--accent);
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+/* 技能 OR 语义提示 */
+.orHint {
+  font-size: 12px;
+  color: #999;
+}
+
+/* 加载错误态容器 */
+.errorContainer {
+  padding: 48px 0;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filterBar {
+    flex-direction: column;
+  }
+}

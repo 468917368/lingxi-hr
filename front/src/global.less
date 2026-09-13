@@ -1,0 +1,335 @@
+/* ===== Design Tokens - from prototype.html ===== */
+/* ===== Color-Block Design System ===== */
+
+/* ===== Font Loading (Google Fonts CDN) ===== */
+/* 注意：Less编译器不支持@import url()，需要在HTML中加载字体或使用JS加载 */
+
+:root {
+  /* Typography - 优化后的字体栈 */
+  /* 标题：Outfit（英文）+ Noto Sans SC（中文）*/
+  --font-title: "Outfit", "Noto Sans SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  /* 正文：Noto Sans SC 优先，系统字体兜底 */
+  --font-body: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  /* 等宽：JetBrains Mono */
+  --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", Consolas, monospace;
+
+  /* Typography Scale - 统一的排版系统 */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 15px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 20px;
+  --text-3xl: 24px;
+  --text-4xl: 28px;
+  --text-5xl: 34px;
+
+  /* Font Weights - 统一的字重 */
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  /* Letter Spacing - 中英文分离的字间距 */
+  /* 中文：0 或微正 */
+  --tracking-cn: 0;
+  --tracking-cn-tight: -0.02em;
+  /* 英文：负间距用于标题 */
+  --tracking-en: -0.02em;
+  --tracking-en-tight: -0.04em;
+  /* 等宽：微正 */
+  --tracking-mono: 0.02em;
+
+  /* Border Radius - 统一的圆角系统 */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-full: 9999px;
+
+  /* Neutral Colors */
+  --text: #1E1B1B;
+  --text-secondary: #5C5856;
+  --text-tertiary: #999590;
+  --white: #FFFFFF;
+  --bg: #F8F7F5;
+  --border: #E8E5E0;
+
+  /* Shadows - 更有层次感的阴影系统 */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02), 0 8px 24px rgba(0, 0, 0, 0.03);
+  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06), 0 16px 48px rgba(0, 0, 0, 0.04);
+  --shadow-card-active: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-overlay: 0 16px 48px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-inner: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+
+  /* Border - 更精致的边框 */
+  --border-subtle: rgba(0, 0, 0, 0.04);
+  --border-default: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.12);
+
+  /* Easing */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===== C端 (Candidate) - Coral Red ===== */
+.c-mode {
+  --accent: #FF6B6B;
+  --accent-2: #FF8E72;
+  --accent-3: #FFA07A;
+  --accent-soft: #FFF0EE;
+  --accent-shadow: rgba(255, 107, 107, 0.22);
+  --bg-gradient-1: #FFF5F3;
+  --bg-gradient-2: #FFF0EE;
+}
+
+/* ===== B端 (HR) - Teal ===== */
+.b-mode {
+  --accent: #4ECDC4;
+  --accent-2: #44B5AB;
+  --accent-3: #6EE7DE;
+  --accent-soft: #EDFCFA;
+  --accent-shadow: rgba(78, 205, 196, 0.22);
+  --bg-gradient-1: #F5FCFB;
+  --bg-gradient-2: #EDFCFA;
+}
+
+/* ===== B端 (Interviewer) - Sky Blue ===== */
+.b-mode.interviewer-role {
+  --accent: #45B7D1;
+  --accent-2: #3AA0B8;
+  --accent-3: #7DD3E8;
+  --accent-soft: #EDF7FA;
+  --accent-shadow: rgba(69, 183, 209, 0.22);
+  --bg-gradient-1: #F5FAFC;
+  --bg-gradient-2: #EDF7FA;
+}
+
+/* ===== A端 (Admin) - Purple ===== */
+.a-mode {
+  --accent: #A855F7;
+  --accent-2: #9333EA;
+  --accent-3: #C084FC;
+  --accent-soft: #F5F0FF;
+  --accent-shadow: rgba(168, 85, 247, 0.22);
+  --bg-gradient-1: #FDFAFF;
+  --bg-gradient-2: #F5F0FF;
+}
+
+/* ===== Global Reset ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100dvh;
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* ===== HR 页面通用背景（人才库 hero 风格，全局类） ===== */
+.hr-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  background:
+    radial-gradient(900px 420px at 8% -5%, rgba(78, 205, 196, 0.12), transparent 55%),
+    radial-gradient(760px 380px at 96% 0%, rgba(69, 183, 209, 0.10), transparent 50%),
+    var(--bg);
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(520px 240px at 86% 14%, rgba(78, 205, 196, 0.08), transparent 60%),
+      radial-gradient(440px 210px at 12% 26%, rgba(69, 183, 209, 0.07), transparent 60%);
+  }
+
+  &::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(380px 200px at 72% 22%, rgba(78, 205, 196, 0.10), transparent 60%),
+      radial-gradient(320px 180px at 18% 62%, rgba(69, 183, 209, 0.08), transparent 60%);
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+@keyframes hrBlobFloat {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 16px, 0);
+  }
+}
+
+@keyframes hrAuroraFloat {
+  from {
+    opacity: 0.55;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(-24px, 20px, 0) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hr-page::before {
+    animation: hrBlobFloat 22s var(--ease-out) infinite alternate;
+  }
+
+  .hr-page::after {
+    animation: hrAuroraFloat 26s var(--ease-out) infinite alternate;
+  }
+}
+
+/* ===== C端 页面通用背景（Coral Red 极光风格） ===== */
+.c-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  background:
+    radial-gradient(900px 420px at 8% -5%, rgba(255, 107, 107, 0.10), transparent 55%),
+    radial-gradient(760px 380px at 96% 0%, rgba(255, 142, 114, 0.08), transparent 50%),
+    var(--bg);
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(520px 240px at 86% 14%, rgba(255, 107, 107, 0.06), transparent 60%),
+      radial-gradient(440px 210px at 12% 26%, rgba(255, 160, 122, 0.05), transparent 60%);
+  }
+
+  &::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(380px 200px at 72% 22%, rgba(255, 107, 107, 0.08), transparent 60%),
+      radial-gradient(320px 180px at 18% 62%, rgba(255, 142, 114, 0.06), transparent 60%);
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+@keyframes cBlobFloat {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, 16px, 0); }
+}
+
+@keyframes cAuroraFloat {
+  from { opacity: 0.55; transform: translate3d(0, 0, 0) scale(1); }
+  to { opacity: 1; transform: translate3d(-24px, 20px, 0) scale(1.06); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .c-page::before {
+    animation: cBlobFloat 22s var(--ease-out) infinite alternate;
+  }
+  .c-page::after {
+    animation: cAuroraFloat 26s var(--ease-out) infinite alternate;
+  }
+}
+
+/* ===== 通用入场动画 ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.anim-fade-up {
+  animation: fadeInUp 0.5s var(--ease-out) both;
+}
+
+.anim-fade-scale {
+  animation: fadeInScale 0.4s var(--ease-out) both;
+}
+
+.anim-slide-right {
+  animation: slideInRight 0.5s var(--ease-out) both;
+}
+
+/* 延迟工具类 */
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.1s; }
+.delay-3 { animation-delay: 0.15s; }
+.delay-4 { animation-delay: 0.2s; }
+.delay-5 { animation-delay: 0.25s; }
+.delay-6 { animation-delay: 0.3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-fade-up,
+  .anim-fade-scale,
+  .anim-slide-right {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

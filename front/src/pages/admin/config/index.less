@@ -1,0 +1,56 @@
+.page {
+  padding: 0;
+}
+
+.configSection {
+  margin-bottom: 28px;
+}
+
+.sectionCard {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s var(--ease-out);
+
+  &:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-title);
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: -0.3px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.formItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-family: var(--font-title);
+}
+
+.saveBar {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 24px;
+}

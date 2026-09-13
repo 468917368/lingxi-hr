@@ -1,0 +1,180 @@
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero {
+  position: relative;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  padding: 30px 32px;
+  margin-bottom: 20px;
+  background:
+    radial-gradient(640px 320px at 88% 8%, var(--accent-soft), transparent 55%),
+    radial-gradient(520px 280px at 4% 100%, rgba(255, 255, 255, 0.95), transparent 50%),
+    linear-gradient(180deg, var(--bg-gradient-1), var(--bg-gradient-2));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero {
+    animation: heroFadeUp 0.6s var(--ease-out) both;
+  }
+}
+
+.heroDecor {
+  position: absolute;
+  top: -70px;
+  right: -40px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 107, 107, 0.15);
+  pointer-events: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 44px;
+    right: 44px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 107, 107, 0.12);
+  }
+}
+
+.heroGrid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  background-image: radial-gradient(circle, rgba(255, 107, 107, 0.12) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: linear-gradient(90deg, transparent, black 40%, black 60%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 40%, black 60%, transparent);
+}
+
+.heroInner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.heroLeft {
+  min-width: 0;
+}
+
+.heroTitle {
+  font-family: var(--font-title);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: var(--tracking-cn);
+  color: var(--text);
+  line-height: 1.15;
+}
+
+.heroDesc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.heroChips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.heroChip {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-title);
+}
+
+.heroClear {
+  color: var(--text-tertiary) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 0 4px !important;
+
+  &:hover {
+    color: var(--accent) !important;
+  }
+}
+
+.heroRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* 常用右侧操作按钮（accent 主按钮） */
+.heroBtn {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600 !important;
+  font-family: var(--font-title) !important;
+  height: 40px !important;
+  padding: 0 22px !important;
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 4px 14px var(--accent-shadow) !important;
+  transition: all 0.25s var(--ease-out) !important;
+
+  &:hover {
+    background: var(--accent-2) !important;
+    border-color: var(--accent-2) !important;
+    transform: translateY(-1px);
+  }
+}
+
+/* 右侧统计（大数字渐变） */
+.heroStat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-right: 20px;
+  border-right: 1px solid var(--border);
+
+  &:last-child {
+    border-right: none;
+    padding-right: 0;
+  }
+}
+
+.heroStatNum {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: var(--tracking-mono);
+  line-height: 1;
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.heroStatLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
+  font-family: var(--font-title);
+  margin-top: 6px;
+}

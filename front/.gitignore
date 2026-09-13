@@ -1,0 +1,35 @@
+node_modules
+.umi
+.umi-production
+dist
+.env.local
+docs
+
+# 环境变量（本地可能含密钥/API 地址，不入库）
+.env
+.env.*.local
+
+# 日志与调试
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TS 增量编译缓存
+*.tsbuildinfo
+
+# IDE
+.idea/
+.vscode/
+
+# OS 系统文件
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
+CLAUDE.md
+
+# ESLint/Stylelint 本地配置（隔离，不入库；@umijs/lint 为本地依赖）
+.eslintrc.js
+.stylelintrc.js

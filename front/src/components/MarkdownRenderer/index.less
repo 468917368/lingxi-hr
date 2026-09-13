@@ -1,0 +1,140 @@
+.markdownBody {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+  word-break: break-word;
+
+  /* 标题 */
+  .h1 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 16px 0 8px;
+    color: var(--text);
+  }
+
+  .h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 14px 0 6px;
+    color: var(--text);
+  }
+
+  .h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 12px 0 4px;
+    color: var(--text);
+  }
+
+  /* 段落 */
+  .p {
+    margin: 0 0 8px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  /* 列表 */
+  .ul, .ol {
+    margin: 4px 0 8px;
+    padding-left: 20px;
+  }
+
+  .li {
+    margin: 2px 0;
+  }
+
+  /* 加粗/斜体 */
+  .strong {
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .em {
+    font-style: italic;
+  }
+
+  /* 行内代码 */
+  .inlineCode {
+    padding: 2px 6px;
+    font-size: 13px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 4px;
+    color: #e83e8c;
+  }
+
+  /* 代码块 */
+  .codeBlock {
+    margin: 8px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #1e1e1e;
+
+    pre {
+      margin: 0;
+      padding: 12px 16px;
+      overflow-x: auto;
+
+      code {
+        font-size: 13px;
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        color: #d4d4d4;
+        line-height: 1.5;
+      }
+    }
+  }
+
+  /* 引用 */
+  .blockquote {
+    margin: 8px 0;
+    padding: 4px 12px;
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0 4px 4px 0;
+    color: var(--text-secondary);
+
+    p {
+      margin: 4px 0;
+    }
+  }
+
+  /* 表格 */
+  .tableWrapper {
+    margin: 8px 0;
+    overflow-x: auto;
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .th, .td {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+
+  .th {
+    background: var(--bg-secondary);
+    font-weight: 600;
+  }
+
+  /* 链接 */
+  .link {
+    color: var(--accent);
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  /* 分割线 */
+  .hr {
+    margin: 12px 0;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+}

@@ -1,0 +1,1071 @@
+/* ===== 模拟面试 - 浅色高级感 / 科技感 ===== */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ===== 玻璃拟态共享 ===== */
+.glass {
+  background: rgba(255, 255, 255, 0.66);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-xl);
+}
+
+/* ===== Keyframes ===== */
+@keyframes miFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes orbPulse {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+
+@keyframes orbPing {
+  0% { transform: scale(0.82); opacity: 0.8; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes radarSweep {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dotBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@keyframes shimmer {
+  to { background-position: 200% 0; }
+}
+
+@keyframes growX {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* ===== 入场动画 ===== */
+@media (prefers-reduced-motion: no-preference) {
+  .prepHero { animation: miFadeUp 0.5s var(--ease-out) both; }
+  .genPanel { animation: miFadeUp 0.5s var(--ease-out) both; }
+  .questionCard { animation: miFadeUp 0.45s var(--ease-out) both; }
+  .reportCard { animation: miFadeUp 0.45s var(--ease-out) both; }
+}
+
+/* ===== 通用标题 ===== */
+.phaseTitle {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 8px;
+  font-family: var(--font-title);
+  letter-spacing: var(--tracking-cn);
+  background: linear-gradient(120deg, var(--text) 30%, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.phaseDesc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  line-height: 1.7;
+}
+
+.phaseMeta {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  letter-spacing: var(--tracking-mono);
+}
+
+.jobSourceTip {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   Prep 阶段 - AI 模拟面试舱
+   ============================================================ */
+.prepHero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card-hover);
+  padding: 44px 32px 36px;
+  text-align: center;
+  background:
+    radial-gradient(420px 220px at 12% 0%, rgba(255, 107, 107, 0.14), transparent 60%),
+    radial-gradient(360px 200px at 92% 12%, rgba(255, 142, 114, 0.12), transparent 55%),
+    linear-gradient(160deg, #ffffff 0%, #fff6f3 55%, #ffffff 100%);
+}
+
+.prepAurora {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  filter: blur(10px);
+  background:
+    radial-gradient(240px 140px at 18% 94%, rgba(255, 160, 122, 0.18), transparent 60%),
+    radial-gradient(200px 120px at 84% 96%, rgba(255, 107, 107, 0.14), transparent 55%);
+}
+
+.prepContent {
+  position: relative;
+  z-index: 1;
+}
+
+/* AI 能量球 */
+.prepOrb {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  margin: 0 auto 18px;
+}
+
+.orbCore {
+  position: absolute;
+  inset: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, var(--accent-3) 45%, var(--accent) 100%);
+  box-shadow: 0 0 24px var(--accent-shadow), 0 0 64px var(--accent-shadow);
+}
+
+.orbRing {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent-3);
+}
+
+.prepBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-mono);
+  margin-bottom: 12px;
+}
+
+/* 特性胶囊 */
+.featurePills {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 22px 0 24px;
+}
+
+.featurePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.featurePill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent-shadow);
+}
+
+/* 控制面板 */
+.prepGlass {
+  .glass;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.phaseControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.prepGlass :global(.ant-segmented) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.countSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.countLabel {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+/* CTA 按钮 */
+.startBtn {
+  padding: 15px 46px;
+  border-radius: var(--radius-full);
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 60%, var(--accent-3) 100%);
+  background-size: 160% 160%;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-title);
+  box-shadow: 0 8px 24px var(--accent-shadow), 0 2px 6px rgba(255, 107, 107, 0.3);
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px var(--accent-shadow), 0 4px 12px rgba(255, 107, 107, 0.35);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+/* ============================================================
+   Generating 阶段 - 雷达 + 进度管线
+   ============================================================ */
+.genPanel {
+  .glass;
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.genRadar {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle, var(--accent-soft) 0%, transparent 62%);
+  border: 1px solid var(--border);
+}
+
+.radarRings::before {
+  content: '';
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.radarRings::after {
+  content: '';
+  position: absolute;
+  inset: 42%;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.radarSweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 300deg,
+    rgba(255, 107, 107, 0.45) 355deg,
+    transparent 360deg
+  );
+}
+
+.radarDot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent-shadow);
+}
+
+.genTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 8px 0 26px;
+  font-family: var(--font-title);
+}
+
+.genLiveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-shadow);
+}
+
+.genLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.genPipeline {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.genStep {
+  display: flex;
+  gap: 14px;
+  text-align: left;
+}
+
+.genStepRail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.genStepRail::after {
+  content: '';
+  position: absolute;
+  top: 30px;
+  bottom: -14px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--accent-3), rgba(255, 107, 107, 0.15));
+}
+
+.genStep:last-child .genStepRail::after {
+  display: none;
+}
+
+.genStepIcon {
+  position: relative;
+  z-index: 1;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  background: #ecfdf5;
+  color: #059669;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.9);
+}
+
+.genStepBody {
+  padding-top: 3px;
+}
+
+.genStepText {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.genStepCode {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--tracking-mono);
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.genStepActive .genStepIcon {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.genStepDone {
+  opacity: 1;
+}
+
+/* ============================================================
+   Answering 阶段 - 科技感题卡
+   ============================================================ */
+.questionCard {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card-hover);
+  padding: 32px;
+}
+
+.questionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.qHeaderLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.qProgressLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--text-tertiary);
+}
+
+.qProgressNum {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.qStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.dotLive {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-shadow);
+}
+
+.qProgressTrack {
+  margin-bottom: 22px;
+}
+
+.qProgressBar :global(.ant-progress-inner) {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+}
+
+.qProgressBar :global(.ant-progress-bg) {
+  border-radius: 4px;
+  box-shadow: 0 0 8px var(--accent-shadow);
+}
+
+.questionMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.questionText {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 22px;
+  font-family: var(--font-title);
+  letter-spacing: var(--tracking-cn);
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, var(--bg-gradient-1), rgba(255, 255, 255, 0));
+  border-left: 3px solid var(--accent);
+}
+
+/* 答题区 */
+.answerArea {
+  margin-bottom: 24px;
+}
+
+.answerHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.answerTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.answerTip {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.answerTextarea {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+
+  &:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-soft) !important;
+  }
+}
+
+.questionActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* 主按钮：珊瑚渐变覆盖（项目无全局主题） */
+.questionActions :global(.ant-btn-primary) {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border: none;
+  box-shadow: 0 4px 14px var(--accent-shadow);
+}
+
+.questionActions :global(.ant-btn-primary:hover) {
+  background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+  transform: translateY(-1px);
+}
+
+/* 评分面板 */
+.scorePanel {
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  margin-top: 6px;
+  background: linear-gradient(160deg, var(--bg-gradient-1), #ffffff);
+  border: 1px solid var(--border-subtle);
+}
+
+.scorePanelHead {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 20px;
+}
+
+.scoreDims {
+  flex: 1;
+  display: grid;
+  gap: 14px;
+}
+
+.scoreDimHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.scoreDimLabel {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+.scoreDimValue {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--text);
+}
+
+.dimBar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.dimBarFill {
+  height: 100%;
+  border-radius: 3px;
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--accent), var(--accent-3));
+  box-shadow: 0 0 8px var(--accent-shadow);
+}
+
+.scoreComment {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+}
+
+/* ===== 圆形评分仪表 ===== */
+.gauge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gaugeSvg {
+  display: block;
+}
+
+.gaugeBar {
+  transition: stroke-dashoffset 1.2s var(--ease-out);
+}
+
+.gaugeCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.gaugeNum {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+
+.gaugeLabel {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+/* ============================================================
+   Report 阶段 - 报告 hero + 双栏
+   ============================================================ */
+.reportCard {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card-hover);
+  padding: 32px;
+}
+
+.reportHead {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.reportScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.reportLevel {
+  margin: 0;
+  font-size: 14px;
+  padding: 4px 16px;
+  border-radius: var(--radius-sm);
+}
+
+.reportStats {
+  display: flex;
+  gap: 28px;
+}
+
+.reportStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 22px;
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  min-width: 96px;
+}
+
+.reportStatNum {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 26px;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.reportStatLabel {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+.reportSections {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.reportSection {
+  text-align: center;
+  padding: 20px;
+  border-radius: var(--radius-md);
+  background: var(--bg);
+}
+
+.reportSectionTitle {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+
+.reportSectionBar {
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.05);
+  margin: 10px auto 8px;
+  overflow: hidden;
+}
+
+.reportSectionFill {
+  height: 100%;
+  border-radius: 4px;
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--accent), var(--accent-3));
+  box-shadow: 0 0 10px var(--accent-shadow);
+}
+
+.reportSectionValue {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--text);
+}
+
+.reportColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.reportColTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-title);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reportColTitle::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent-shadow);
+}
+
+.reportListItem {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.reportListGreen {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.reportListRed {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.endBtn {
+  padding: 14px 44px;
+  border-radius: var(--radius-full);
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 60%, var(--accent-3) 100%);
+  background-size: 160% 160%;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-title);
+  box-shadow: 0 8px 24px var(--accent-shadow);
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+  display: block;
+  margin: 28px auto 0;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px var(--accent-shadow);
+  }
+}
+
+/* ===== 报告等级与提升方案 ===== */
+.reportPlan {
+  margin-top: 24px;
+}
+
+.reportPlanTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-title);
+  margin-bottom: 12px;
+}
+
+.reportPlanContent {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+}
+
+/* ===== 逐题回顾 ===== */
+.reviewList {
+  margin-top: 24px;
+}
+
+.reviewListTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-title);
+  margin-bottom: 12px;
+}
+
+.reviewItem {
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+}
+
+.reviewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.reviewQn {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-mono);
+}
+
+.reviewScore {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+.reviewContent {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.reviewAnswer {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: 8px 12px;
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+}
+
+.reviewComment {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  line-height: 1.6;
+}
+
+/* ===== 动效（仅在允许时） ===== */
+@media (prefers-reduced-motion: no-preference) {
+  .orbCore {
+    animation: orbPulse 2.6s var(--ease-out) infinite, orbFloat 6s var(--ease-out) infinite;
+  }
+
+  .orbRing1 {
+    animation: orbPing 2.4s var(--ease-out) infinite both;
+  }
+
+  .orbRing2 {
+    animation: orbPing 2.4s 0.6s var(--ease-out) infinite both;
+  }
+
+  .startBtn,
+  .endBtn {
+    animation: shimmer 3.5s var(--ease-out) infinite;
+  }
+
+  .radarSweep {
+    animation: radarSweep 2.8s linear infinite;
+  }
+
+  .genLiveDot,
+  .dotLive {
+    animation: dotBlink 1.6s var(--ease-out) infinite;
+  }
+
+  .genStepActive .genStepIcon {
+    animation: orbPulse 1.4s var(--ease-out) infinite;
+  }
+
+  .dimBarFill {
+    animation: growX 0.9s var(--ease-out) both;
+  }
+
+  .scoreDim:nth-child(2) .dimBarFill {
+    animation-delay: 0.1s;
+  }
+
+  .scoreDim:nth-child(3) .dimBarFill {
+    animation-delay: 0.2s;
+  }
+
+  .reportSectionFill {
+    animation: growX 0.9s var(--ease-out) both;
+  }
+
+  .reportSection:nth-child(2) .reportSectionFill {
+    animation-delay: 0.1s;
+  }
+
+  .reportSection:nth-child(3) .reportSectionFill {
+    animation-delay: 0.2s;
+  }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .prepHero {
+    padding: 28px 18px;
+  }
+
+  .prepOrb {
+    width: 104px;
+    height: 104px;
+  }
+
+  .orbCore {
+    inset: 28px;
+  }
+
+  .phaseControls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .phaseControls :global(.ant-select),
+  .phaseControls :global(.ant-segmented) {
+    width: 100% !important;
+  }
+
+  .countSelector {
+    justify-content: center;
+  }
+
+  .genRadar {
+    width: 132px;
+    height: 132px;
+  }
+
+  .genPanel {
+    padding: 28px 18px;
+  }
+
+  .scorePanelHead {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .scoreDims {
+    width: 100%;
+  }
+
+  .reportHead {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .reportSections,
+  .reportColumns {
+    grid-template-columns: 1fr;
+  }
+
+  .reportStats {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .questionCard,
+  .reportCard {
+    padding: 20px 16px;
+  }
+}

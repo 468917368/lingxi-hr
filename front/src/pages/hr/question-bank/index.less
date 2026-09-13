@@ -1,0 +1,229 @@
+.page {
+  padding: 8px 0 40px;
+}
+
+.accentBtn {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600 !important;
+  font-family: var(--font-title) !important;
+  height: 40px !important;
+  padding: 0 20px !important;
+  transition: all 0.25s var(--ease-bounce) !important;
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+
+  &:hover {
+    transform: scale(1.03) !important;
+    background: var(--accent-2) !important;
+    border-color: var(--accent-2) !important;
+  }
+}
+
+/* Card wrapper */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* Filter Bar */
+.filterBar {
+  padding: 16px 24px 0;
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0 16px;
+}
+
+.filterItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.filterInput {
+  width: 200px;
+  border-radius: var(--radius-sm) !important;
+
+  &:hover,
+  &:focus {
+    border-color: var(--accent) !important;
+  }
+
+  &:focus-within {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px var(--accent-shadow) !important;
+  }
+}
+
+.filterSelect {
+  width: 140px;
+}
+
+.resetBtn {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 550 !important;
+  border-color: var(--border) !important;
+  color: var(--text-secondary) !important;
+  transition: all 0.2s var(--ease-out) !important;
+
+  &:hover {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+  }
+}
+
+/* Table */
+.table {
+  :global(.ant-table) {
+    font-size: 14px;
+  }
+
+  :global(.ant-table-thead > tr > th) {
+    background: var(--bg);
+    font-weight: 650;
+    font-family: var(--font-title);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-tertiary);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+  }
+
+  :global(.ant-table-tbody > tr > td) {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  :global(.ant-table-tbody > tr:hover > td) {
+    background: var(--accent-soft);
+  }
+}
+
+/* 题干截断（两行省略，带 tooltip 全文） */
+.contentCell {
+  max-width: 320px;
+}
+
+.contentText {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.6;
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* Skill Tags */
+.skillTags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.skillTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-title);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.skillTagMore {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg);
+  color: var(--text-tertiary);
+}
+
+/* Time */
+.timeCell {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* Action Buttons */
+.actionBtn {
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 2px 4px !important;
+
+  &:hover {
+    color: var(--accent) !important;
+  }
+}
+
+.actionBtnPrimary {
+  color: var(--accent) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 2px 4px !important;
+
+  &:hover {
+    color: var(--accent-2) !important;
+  }
+}
+
+.actionBtnWarn {
+  color: #d97706 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 2px 4px !important;
+
+  &:hover {
+    color: #b45309 !important;
+  }
+}
+
+/* 审核弹窗 */
+.reviewBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.reviewContent {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 12px 14px;
+  white-space: pre-wrap;
+}
+
+.reviewAction {
+  display: flex;
+  gap: 8px;
+}
+
+/* 加载错误态容器 */
+.errorContainer {
+  padding: 48px 0;
+  text-align: center;
+}
